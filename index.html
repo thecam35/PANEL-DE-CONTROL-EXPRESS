@@ -1,0 +1,4116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express - Panel de Administración</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK actualizado -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary: #dc3545;
+            --primary-dark: #b02a37;
+            --primary-light: #f5c6cb;
+            --secondary: #1a1a1a;
+            --dark: #1a1a1a;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --background: #f4f4f9;
+            --text: #1a1a1a;
+            --card-bg: white;
+            --input-bg: #f5f5f5;
+            --sidebar-bg: #1a1a1a;
+            --sidebar-hover: #2a2a2a;
+            --sidebar-active: #dc3545;
+            --border-red: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* ========== LOGIN / REGISTER SCREEN ========== */
+        #auth-screen {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #dc3545 100%);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-logo i {
+            font-size: 48px;
+            color: var(--primary);
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            color: var(--gray);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .auth-tab:hover:not(.active) {
+            color: var(--dark);
+        }
+
+        .auth-form {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .auth-form.active {
+            display: flex;
+        }
+
+        .auth-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .auth-form-group label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .auth-form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .auth-form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .auth-btn {
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-btn:hover:not(:disabled) {
+            opacity: 0.85;
+            transform: translateY(-2px);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-error {
+            color: var(--danger);
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .auth-loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .auth-loading .spinner {
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .auth-success {
+            color: var(--success);
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        /* ========== ADMIN PANEL ========== */
+        .admin-panel {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            background: var(--background);
+        }
+
+        .admin-panel.active {
+            display: flex;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            color: white;
+            transition: all 0.3s;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+
+        .admin-sidebar.collapsed {
+            width: 70px;
+        }
+
+        .admin-sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+
+        .admin-sidebar.collapsed .sidebar-logo-text {
+            display: none;
+        }
+
+        .admin-sidebar.collapsed .sidebar-toggle i {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+
+        .sidebar-logo-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+
+        .sidebar-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .sidebar-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .sidebar-item.active {
+            background: var(--sidebar-active);
+            border-left-color: white;
+            color: white;
+        }
+
+        .sidebar-icon {
+            width: 24px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .sidebar-text {
+            font-weight: 500;
+        }
+
+        .sidebar-badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .admin-main.expanded {
+            margin-left: 70px;
+        }
+
+        .admin-header {
+            background: var(--secondary);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .admin-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .admin-title i {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: white;
+        }
+
+        .user-role-badge {
+            background: var(--warning);
+            color: var(--dark);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--primary);
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            background: var(--light);
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-section {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        /* Admin Management */
+        .admin-card {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .admin-info {
+            flex: 1;
+        }
+
+        .admin-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .admin-email {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .admin-role-badge {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .admin-role-badge.super {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .admin-role-badge.admin {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-remove-admin {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-remove-admin:hover {
+            opacity: 0.85;
+        }
+
+        .admin-form {
+            background: var(--input-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .admin-form-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-form-group input,
+        .admin-form-group select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: var(--card-bg);
+            color: var(--text);
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .admin-form-group input:focus,
+        .admin-form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-add-admin {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add-admin:hover {
+            opacity: 0.85;
+        }
+
+        /* Driver Applications */
+        .pending-drivers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .driver-application {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--warning);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .driver-app-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .driver-app-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .driver-app-details {
+            flex: 1;
+        }
+
+        .driver-app-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .driver-app-phone, .driver-app-email, .driver-app-vehicle {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .driver-app-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-approve {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-approve:hover {
+            opacity: 0.85;
+        }
+
+        .btn-reject {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reject:hover {
+            opacity: 0.85;
+        }
+
+        .btn-view-details {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-view-details:hover {
+            opacity: 0.85;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 0;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-section {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .info-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .photo-section {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .photo-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .photo-container {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-container:hover {
+            transform: scale(1.02);
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            color: var(--gray);
+            text-align: center;
+        }
+
+        .photo-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        /* Verified Drivers */
+        .verified-drivers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .verified-driver-card {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid var(--success);
+            transition: transform 0.2s;
+        }
+
+        .verified-driver-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .verified-driver-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            margin: 0 auto 10px;
+        }
+
+        .verified-driver-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .verified-driver-email, .verified-driver-vehicle, .verified-driver-plate {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .verified-driver-status {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        .verified-driver-status.online {
+            background: var(--success);
+            color: white;
+        }
+
+        .verified-driver-status.offline {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-revoke {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-revoke:hover {
+            opacity: 0.85;
+        }
+
+        /* Notifications */
+        .notification-system {
+            margin-top: 20px;
+        }
+
+        .notification-form {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .notification-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-bg);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .notification-form textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .notification-targets {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .notification-target {
+            flex: 1;
+            padding: 10px 15px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            min-width: 100px;
+            font-weight: 500;
+        }
+
+        .notification-target.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .notification-target:hover:not(.active) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .btn-send-notification {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .btn-send-notification:hover:not(:disabled) {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .btn-send-notification:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .notification-preview {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .notification-preview-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .notification-preview-message {
+            font-size: 13px;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .notification-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .notification-stat {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .notification-stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .notification-stat-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        /* Blacklist */
+        .blacklist-section {
+            margin-top: 20px;
+        }
+
+        .blacklist-form {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .blacklist-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .blacklist-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--input-bg);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            min-width: 150px;
+        }
+
+        .blacklist-input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-add-blacklist {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .btn-add-blacklist:hover {
+            opacity: 0.85;
+        }
+
+        .blacklist-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .blacklist-item {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--danger);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .blacklist-plate {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .blacklist-reason {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .btn-remove-blacklist {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-remove-blacklist:hover {
+            opacity: 0.85;
+        }
+
+        .no-applications {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .no-applications i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background: var(--card-bg);
+            color: var(--text);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 350px;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-left-color: var(--success);
+        }
+        
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .toast-message {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        /* Earnings */
+        .earnings-section {
+            margin-top: 20px;
+        }
+
+        .earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .earning-item {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .earning-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .earning-label {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .receipts-section {
+            margin-top: 20px;
+        }
+
+        .receipts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .receipt-item {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .receipt-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .receipt-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .receipt-details {
+            flex: 1;
+        }
+
+        .receipt-driver-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .receipt-amount, .receipt-date {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-view-receipt {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-view-receipt:hover {
+            opacity: 0.85;
+        }
+
+        .btn-approve-receipt {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-approve-receipt:hover {
+            opacity: 0.85;
+        }
+
+        .btn-reject-receipt {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reject-receipt:hover {
+            opacity: 0.85;
+        }
+
+        .receipt-modal-content {
+            max-width: 600px;
+        }
+
+        .receipt-image-container {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-image {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .receipt-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .receipt-detail-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .receipt-detail-value {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .receipt-actions-modal {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .credits-requests-section {
+            margin-top: 20px;
+        }
+
+        .credits-requests-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .credits-request-item {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--warning);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .credits-request-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .credits-request-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .credits-request-details {
+            flex: 1;
+        }
+
+        .credits-request-driver-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .credits-request-amount, .credits-request-account, .credits-request-date {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .credits-request-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-view-credits-details {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-view-credits-details:hover {
+            opacity: 0.85;
+        }
+
+        .btn-approve-credits {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-approve-credits:hover {
+            opacity: 0.85;
+        }
+
+        .btn-reject-credits {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reject-credits:hover {
+            opacity: 0.85;
+        }
+
+        .credits-modal-content {
+            max-width: 600px;
+        }
+
+        .credits-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .credits-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .credits-detail-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .credits-detail-value {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .credits-actions-modal {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .chat-container {
+            display: flex;
+            gap: 20px;
+            height: 600px;
+        }
+
+        .chat-sidebar {
+            width: 300px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--input-bg);
+        }
+
+        .chat-sidebar-title {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .chat-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-control-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .chat-control-btn:hover {
+            opacity: 0.85;
+        }
+
+        .active-chats-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .active-chat-item {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid var(--primary);
+        }
+
+        .active-chat-item:hover {
+            background: #e9ecef;
+        }
+
+        .active-chat-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .chat-user-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .chat-last-message {
+            font-size: 12px;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .active-chat-item.active .chat-last-message {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .chat-unread-count {
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .chat-main {
+            flex: 1;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--input-bg);
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .chat-user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-user-status {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            background: var(--input-bg);
+            border-radius: 8px;
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            position: relative;
+            word-wrap: break-word;
+            font-size: 14px;
+        }
+
+        .chat-message.user {
+            align-self: flex-start;
+            background: var(--card-bg);
+            color: var(--text);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-message.admin {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--input-bg);
+            border-radius: 25px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-send-chat {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-send-chat:hover {
+            opacity: 0.85;
+        }
+
+        .no-messages {
+            text-align: center;
+            color: var(--gray);
+            padding: 40px 20px;
+        }
+
+        .no-messages i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .payment-history-section {
+            margin-top: 20px;
+        }
+
+        .payment-filters {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px;
+            border: 1px solid var(--input-bg);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn-apply-filters {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-apply-filters:hover {
+            opacity: 0.85;
+        }
+
+        .btn-reset-filters {
+            background: var(--gray);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset-filters:hover {
+            opacity: 0.85;
+        }
+
+        .payment-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-stat-item {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .payment-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .payment-stat-label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .payment-history-table {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--input-bg);
+            align-items: center;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row:hover {
+            background: var(--input-bg);
+        }
+
+        .payment-status {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .payment-status.approved {
+            background: var(--success);
+            color: white;
+        }
+
+        .payment-status.pending {
+            background: var(--warning);
+            color: white;
+        }
+
+        .payment-status.rejected {
+            background: var(--danger);
+            color: white;
+        }
+
+        .payment-status.completed {
+            background: var(--primary);
+            color: white;
+        }
+
+        .payment-details-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .payment-details-btn:hover {
+            opacity: 0.85;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+        }
+
+        .pagination-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+
+        .pagination-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                width: 70px;
+            }
+            
+            .admin-sidebar .sidebar-text {
+                display: none;
+            }
+            
+            .admin-sidebar .sidebar-logo-text {
+                display: none;
+            }
+            
+            .admin-main {
+                margin-left: 70px;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .chat-sidebar {
+                width: 100%;
+                height: 200px;
+            }
+            
+            .chat-main {
+                height: 400px;
+            }
+            
+            .table-header, .table-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .photos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .auth-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== AUTH SCREEN ========== -->
+    <div id="auth-screen">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="auth-title">Express Admin</div>
+            <div class="auth-subtitle">Panel de Administración</div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Iniciar Sesión</button>
+                <button class="auth-tab" data-tab="register">Registrarse</button>
+            </div>
+
+            <!-- Login Form -->
+            <form class="auth-form active" id="login-form">
+                <div class="auth-form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="login-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="auth-form-group">
+                    <label>🔒 Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                
+                <div class="auth-error" id="login-error">Error de autenticación</div>
+                <div class="auth-loading" id="login-loading">
+                    <div class="spinner"></div>
+                    <div>Verificando...</div>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form class="auth-form" id="register-form">
+                <div class="auth-form-group">
+                    <label>👤 Nombre</label>
+                    <input type="text" id="register-name" placeholder="Tu nombre" required>
+                </div>
+                <div class="auth-form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="register-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="auth-form-group">
+                    <label>📱 Teléfono</label>
+                    <input type="tel" id="register-phone" placeholder="3001234567" required>
+                </div>
+                <div class="auth-form-group">
+                    <label>🔒 Contraseña</label>
+                    <input type="password" id="register-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+                </div>
+                
+                <div class="auth-error" id="register-error">Error de registro</div>
+                <div class="auth-success" id="register-success">✅ ¡Registro exitoso! Puedes iniciar sesión.</div>
+                <div class="auth-loading" id="register-loading">
+                    <div class="spinner"></div>
+                    <div>Creando cuenta...</div>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="register-btn">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== TOAST CONTAINER ========== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ========== MODALS ========== -->
+    <div class="modal-overlay" id="details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Detalles del Conductor</div>
+                <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="receipt-modal">
+        <div class="modal-content receipt-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Comprobante de Pago</div>
+                <button class="modal-close" id="receipt-modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="receipt-modal-body"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="credits-modal">
+        <div class="modal-content credits-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Solicitud de Créditos</div>
+                <button class="modal-close" id="credits-modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="credits-modal-body"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="payment-history-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Detalles del Pago</div>
+                <button class="modal-close" id="payment-history-modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="payment-history-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ========== ADMIN PANEL ========== -->
+    <div class="admin-panel" id="admin-panel">
+        <!-- Sidebar -->
+        <div class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">E</div>
+                <div class="sidebar-logo-text">Express Admin</div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="sidebar-item active" data-section="dashboard">
+                    <div class="sidebar-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <div class="sidebar-text">Dashboard</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="drivers">
+                    <div class="sidebar-icon"><i class="fas fa-user-clock"></i></div>
+                    <div class="sidebar-text">Solicitudes</div>
+                    <div class="sidebar-badge" id="pending-drivers-count">0</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="verified-drivers">
+                    <div class="sidebar-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="sidebar-text">Conductores Verificados</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="earnings">
+                    <div class="sidebar-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="sidebar-text">Ganancias</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="credits">
+                    <div class="sidebar-icon"><i class="fas fa-coins"></i></div>
+                    <div class="sidebar-text">Créditos</div>
+                    <div class="sidebar-badge" id="pending-credits-count">0</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="payment-history">
+                    <div class="sidebar-icon"><i class="fas fa-history"></i></div>
+                    <div class="sidebar-text">Historial Pagos</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="chat">
+                    <div class="sidebar-icon"><i class="fas fa-comments"></i></div>
+                    <div class="sidebar-text">Chat</div>
+                    <div class="sidebar-badge" id="unread-chats-count">0</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="notifications">
+                    <div class="sidebar-icon"><i class="fas fa-bell"></i></div>
+                    <div class="sidebar-text">Notificaciones</div>
+                </div>
+                
+                <div class="sidebar-item" data-section="blacklist">
+                    <div class="sidebar-icon"><i class="fas fa-ban"></i></div>
+                    <div class="sidebar-text">Lista Negra</div>
+                </div>
+
+                <div class="sidebar-item" data-section="admins">
+                    <div class="sidebar-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="sidebar-text">Gestionar Admins</div>
+                </div>
+            </div>
+            
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-main" id="admin-main">
+            <div class="admin-header">
+                <div class="admin-title"><i class="fas fa-car"></i> Panel de Administración</div>
+                <div class="admin-user">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-name" id="user-name">Admin</div>
+                    <span class="user-role-badge" id="user-role-badge">Admin</span>
+                    <button class="btn-logout" id="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-content">
+                <!-- Dashboard -->
+                <div class="content-section active" id="dashboard-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-chart-line"></i> Estadísticas</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="total-users">0</div>
+                                <div class="stat-label">Usuarios Totales</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="active-drivers">0</div>
+                                <div class="stat-label">Conductores Activos</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="today-rides">0</div>
+                                <div class="stat-label">Viajes Hoy</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="total-earnings">$0</div>
+                                <div class="stat-label">Ganancias Totales</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-exclamation-circle"></i> Alertas</div>
+                        <div class="stats-grid">
+                            <div class="stat-item" style="border-left-color: var(--warning);">
+                                <div class="stat-value" id="pending-applications">0</div>
+                                <div class="stat-label">Solicitudes Pendientes</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: var(--warning);">
+                                <div class="stat-value" id="pending-receipts">0</div>
+                                <div class="stat-label">Comprobantes Pendientes</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: var(--warning);">
+                                <div class="stat-value" id="pending-credits">0</div>
+                                <div class="stat-label">Créditos Pendientes</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: var(--danger);">
+                                <div class="stat-value" id="unread-chats">0</div>
+                                <div class="stat-label">Chats Sin Leer</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Drivers -->
+                <div class="content-section" id="drivers-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-user-clock"></i> Solicitudes Pendientes</div>
+                        <div class="pending-drivers-list" id="pending-drivers-list">
+                            <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Verified Drivers -->
+                <div class="content-section" id="verified-drivers-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-user-check"></i> Conductores Verificados</div>
+                        <div class="verified-drivers-list" id="verified-drivers-list">
+                            <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Earnings -->
+                <div class="content-section" id="earnings-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-money-bill-wave"></i> Ganancias</div>
+                        <div class="earnings-grid">
+                            <div class="earning-item">
+                                <div class="earning-value" id="total-earnings-today">$0</div>
+                                <div class="earning-label">Ganancias Hoy</div>
+                            </div>
+                            <div class="earning-item">
+                                <div class="earning-value" id="total-payments-pending">$0</div>
+                                <div class="earning-label">Pagos Pendientes</div>
+                            </div>
+                            <div class="earning-item">
+                                <div class="earning-value" id="total-comissions">$0</div>
+                                <div class="earning-label">Comisiones</div>
+                            </div>
+                            <div class="earning-item">
+                                <div class="earning-value" id="total-receipts-pending">0</div>
+                                <div class="earning-label">Comprobantes Pendientes</div>
+                            </div>
+                        </div>
+                        <div class="receipts-section">
+                            <div class="section-title"><i class="fas fa-receipt"></i> Comprobantes Pendientes</div>
+                            <div class="receipts-list" id="pending-receipts-list">
+                                <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Credits -->
+                <div class="content-section" id="credits-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-coins"></i> Solicitudes de Créditos</div>
+                        <div class="credits-requests-list" id="pending-credits-list">
+                            <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment History -->
+                <div class="content-section" id="payment-history-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-history"></i> Historial de Pagos</div>
+                        <div class="payment-filters">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label class="filter-label">Tipo</label>
+                                    <select class="filter-select" id="filter-type">
+                                        <option value="all">Todos</option>
+                                        <option value="receipt_payment">Comprobantes</option>
+                                        <option value="credits_payment">Créditos</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label class="filter-label">Estado</label>
+                                    <select class="filter-select" id="filter-status">
+                                        <option value="all">Todos</option>
+                                        <option value="approved">Aprobado</option>
+                                        <option value="pending">Pendiente</option>
+                                        <option value="rejected">Rechazado</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label class="filter-label">Desde</label>
+                                    <input type="date" class="filter-input" id="filter-date-from">
+                                </div>
+                                <div class="filter-item">
+                                    <label class="filter-label">Hasta</label>
+                                    <input type="date" class="filter-input" id="filter-date-to">
+                                </div>
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn-apply-filters" id="btn-apply-filters">
+                                    <i class="fas fa-filter"></i> Aplicar
+                                </button>
+                                <button class="btn-reset-filters" id="btn-reset-filters">
+                                    <i class="fas fa-redo"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="payment-stats">
+                            <div class="payment-stat-item"><div class="payment-stat-value" id="total-payments">0</div><div class="payment-stat-label">Total</div></div>
+                            <div class="payment-stat-item" style="border-left-color: var(--success);"><div class="payment-stat-value" id="approved-payments">0</div><div class="payment-stat-label">Aprobados</div></div>
+                            <div class="payment-stat-item" style="border-left-color: var(--warning);"><div class="payment-stat-value" id="pending-payments">0</div><div class="payment-stat-label">Pendientes</div></div>
+                            <div class="payment-stat-item" style="border-left-color: var(--danger);"><div class="payment-stat-value" id="rejected-payments">0</div><div class="payment-stat-label">Rechazados</div></div>
+                        </div>
+                        <div class="payment-history-table">
+                            <div class="table-header"><div>Fecha</div><div>Conductor</div><div>Monto</div><div>Tipo</div><div>Estado</div><div>Acciones</div></div>
+                            <div id="payment-history-list"><div class="loading"><div class="spinner"></div><div>Cargando...</div></div></div>
+                        </div>
+                        <div class="pagination">
+                            <button class="pagination-btn" id="prev-page" disabled><i class="fas fa-chevron-left"></i></button>
+                            <div class="pagination-info" id="page-info">Página 1</div>
+                            <button class="pagination-btn" id="next-page" disabled><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat -->
+                <div class="content-section" id="chat-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-comments"></i> Chat de Soporte</div>
+                        <div class="chat-container">
+                            <div class="chat-sidebar">
+                                <div class="chat-sidebar-header">
+                                    <div class="chat-sidebar-title">Chats Activos</div>
+                                    <button class="chat-control-btn" id="btn-refresh-chats"><i class="fas fa-sync-alt"></i></button>
+                                </div>
+                                <div class="active-chats-list" id="active-chats-list">
+                                    <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                                </div>
+                            </div>
+                            <div class="chat-main">
+                                <div class="chat-header">
+                                    <div class="chat-header-info">
+                                        <div class="chat-user-avatar" id="current-chat-avatar">?</div>
+                                        <div class="chat-user-details">
+                                            <div class="chat-user-name" id="current-chat-name">Selecciona un chat</div>
+                                            <div class="chat-user-status" id="current-chat-status">Para comenzar</div>
+                                        </div>
+                                    </div>
+                                    <button class="chat-control-btn" id="btn-clear-chat"><i class="fas fa-trash"></i></button>
+                                </div>
+                                <div class="chat-messages" id="chat-messages">
+                                    <div class="no-messages"><i class="fas fa-comments"></i><div>No hay mensajes</div></div>
+                                </div>
+                                <div class="chat-input-container">
+                                    <input type="text" class="chat-input" id="chat-input" placeholder="Escribe un mensaje..." disabled>
+                                    <button class="btn-send-chat" id="btn-send-chat" disabled><i class="fas fa-paper-plane"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications -->
+                <div class="content-section" id="notifications-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-bell"></i> Notificaciones</div>
+                        <div class="notification-system">
+                            <div class="notification-form">
+                                <textarea id="notification-message" placeholder="Mensaje de notificación..."></textarea>
+                                <div class="notification-targets">
+                                    <div class="notification-target active" data-target="all"><i class="fas fa-users"></i> Todos</div>
+                                    <div class="notification-target" data-target="passengers"><i class="fas fa-user"></i> Pasajeros</div>
+                                    <div class="notification-target" data-target="drivers"><i class="fas fa-car"></i> Conductores</div>
+                                </div>
+                                <button class="btn-send-notification" id="btn-send-notification">
+                                    <i class="fas fa-paper-plane"></i> Enviar
+                                </button>
+                                <div id="notification-preview" class="notification-preview" style="display:none;">
+                                    <div class="notification-preview-title">Vista previa:</div>
+                                    <div class="notification-preview-message" id="preview-message"></div>
+                                </div>
+                            </div>
+                            <div class="notification-stats">
+                                <div class="notification-stat"><div class="notification-stat-value" id="total-notifications-sent">0</div><div class="notification-stat-label">Enviadas</div></div>
+                                <div class="notification-stat"><div class="notification-stat-value" id="total-users-notified">0</div><div class="notification-stat-label">Usuarios</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Blacklist -->
+                <div class="content-section" id="blacklist-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-ban"></i> Lista Negra</div>
+                        <div class="blacklist-form">
+                            <div class="blacklist-input-group">
+                                <input type="text" id="blacklist-plate" placeholder="Placa (ej: ABC123)" style="text-transform:uppercase;">
+                                <input type="text" id="blacklist-reason" placeholder="Motivo">
+                            </div>
+                            <button class="btn-add-blacklist" id="btn-add-blacklist"><i class="fas fa-plus"></i> Agregar</button>
+                        </div>
+                        <div class="blacklist-items" id="blacklist-items">
+                            <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admins -->
+                <div class="content-section" id="admins-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-user-shield"></i> Gestionar Administradores</div>
+                        
+                        <div class="admin-form">
+                            <h3 style="margin-bottom:15px;">Agregar Administrador</h3>
+                            <div class="admin-form-group">
+                                <input type="email" id="new-admin-email" placeholder="Email del usuario">
+                                <select id="new-admin-role">
+                                    <option value="admin">Admin</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select>
+                                <button class="btn-add-admin" id="btn-add-admin">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="admins-list">
+                            <div class="loading"><div class="spinner"></div><div>Cargando administradores...</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== CONFIGURACIÓN ==========
+        const firebaseConfig = {
+            apiKey: "AIzaSyAr8YpzOi09Y0-bweKfe7sfxC1NVhMThRo",
+            authDomain: "express-94bd0.firebaseapp.com",
+            databaseURL: "https://express-94bd0-default-rtdb.firebaseio.com",
+            projectId: "express-94bd0",
+            storageBucket: "express-94bd0.firebasestorage.app",
+            messagingSenderId: "1066134193752",
+            appId: "1:1066134193752:web:e2030971dda7e99bffac2d",
+            measurementId: "G-0HYJNLESYM"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ========== VARIABLES GLOBALES ==========
+        let adminData = null;
+        let currentUserRole = null;
+        let chatListener = null;
+        let currentChatId = null;
+        let activeChatsListener = null;
+        let unreadChatsCount = 0;
+        let filteredPayments = [];
+        let currentPaymentPage = 1;
+        const paymentsPerPage = 10;
+        let paymentHistoryListener = null;
+        let dashboardListeners = [];
+        let driversListeners = [];
+        let earningsListeners = [];
+        let creditsListeners = [];
+        let blacklistListeners = [];
+
+        // ========== UTILIDADES ==========
+        function showToast(title, message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></div>
+                <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        }
+
+        function showLoading(element) {
+            element.innerHTML = '<div class="loading"><div class="spinner"></div><div>Cargando...</div></div>';
+        }
+
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        function formatCurrency(amount) {
+            return '$' + (amount || 0).toLocaleString('es-CO');
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('es-CO');
+        }
+
+        function formatDateTime(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString('es-CO');
+        }
+
+        // ========== SISTEMA DE AUTENTICACIÓN ==========
+        function setupAuth() {
+            // Tabs
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const form = this.dataset.tab === 'login' ? 'login-form' : 'register-form';
+                    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                    document.getElementById(form).classList.add('active');
+                    document.getElementById('login-error').style.display = 'none';
+                    document.getElementById('register-error').style.display = 'none';
+                    document.getElementById('register-success').style.display = 'none';
+                });
+            });
+
+            // Login
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value.trim();
+                const btn = document.getElementById('login-btn');
+                const error = document.getElementById('login-error');
+                const loading = document.getElementById('login-loading');
+
+                error.style.display = 'none';
+                btn.disabled = true;
+                loading.style.display = 'block';
+
+                try {
+                    const cred = await auth.signInWithEmailAndPassword(email, password);
+                    // Verificar si es admin
+                    const adminCheck = await checkIfUserIsAdmin(cred.user.uid);
+                    if (adminCheck.isAdmin) {
+                        currentUserRole = adminCheck.role;
+                        adminData = adminCheck.data;
+                        showToast('✅ Bienvenido', `Has iniciado como ${adminCheck.role}`, 'success');
+                        // El auth state change manejará la UI
+                    } else {
+                        await auth.signOut();
+                        error.textContent = '⛔ Acceso Denegado: No eres administrador';
+                        error.style.display = 'block';
+                    }
+                } catch (err) {
+                    error.textContent = err.message === 'Firebase: Error (auth/user-not-found).' 
+                        ? '❌ Usuario no encontrado' 
+                        : err.message === 'Firebase: Error (auth/wrong-password).'
+                        ? '❌ Contraseña incorrecta'
+                        : '❌ Error: ' + err.message;
+                    error.style.display = 'block';
+                } finally {
+                    btn.disabled = false;
+                    loading.style.display = 'none';
+                }
+            });
+
+            // Register
+            document.getElementById('register-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const name = document.getElementById('register-name').value.trim();
+                const email = document.getElementById('register-email').value.trim();
+                const phone = document.getElementById('register-phone').value.trim();
+                const password = document.getElementById('register-password').value;
+                const btn = document.getElementById('register-btn');
+                const error = document.getElementById('register-error');
+                const success = document.getElementById('register-success');
+                const loading = document.getElementById('register-loading');
+
+                error.style.display = 'none';
+                success.style.display = 'none';
+                btn.disabled = true;
+                loading.style.display = 'block';
+
+                try {
+                    // Crear usuario en Auth
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Guardar en Firestore
+                    await db.collection('users').doc(cred.user.uid).set({
+                        displayName: name,
+                        email: email,
+                        phone: phone,
+                        isDriverVerified: false,
+                        isOnline: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        uid: cred.user.uid
+                    });
+
+                    success.style.display = 'block';
+                    success.textContent = '✅ ¡Registro exitoso! Ahora puedes iniciar sesión.';
+                    
+                    // Limpiar campos
+                    document.getElementById('register-name').value = '';
+                    document.getElementById('register-email').value = '';
+                    document.getElementById('register-phone').value = '';
+                    document.getElementById('register-password').value = '';
+
+                    // Cambiar a login
+                    document.querySelector('[data-tab="login"]').click();
+
+                    // Cerrar sesión del usuario registrado
+                    await auth.signOut();
+
+                } catch (err) {
+                    error.textContent = '❌ Error: ' + err.message;
+                    error.style.display = 'block';
+                } finally {
+                    btn.disabled = false;
+                    loading.style.display = 'none';
+                }
+            });
+        }
+
+        // ========== VERIFICAR ADMIN ==========
+        async function checkIfUserIsAdmin(userId) {
+            try {
+                // Verificar en colección admins
+                const adminDoc = await db.collection('admins').doc(userId).get();
+                if (adminDoc.exists) {
+                    const data = adminDoc.data();
+                    return { isAdmin: true, role: data.role || 'admin', data: data };
+                }
+                
+                // Fallback: verificar en users
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (userDoc.exists && userDoc.data().isAdmin === true) {
+                    return { isAdmin: true, role: userDoc.data().role || 'admin', data: userDoc.data() };
+                }
+                
+                return { isAdmin: false };
+            } catch (error) {
+                console.error('Error verificando admin:', error);
+                return { isAdmin: false };
+            }
+        }
+
+        // ========== GESTIÓN DE ADMINS ==========
+        async function addAdmin(email, role) {
+            if (currentUserRole !== 'super_admin') {
+                showToast('⛔ Acceso Denegado', 'Solo Super Admins pueden agregar admins', 'error');
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('users').where('email', '==', email).get();
+                if (snapshot.empty) {
+                    showToast('❌ Error', 'Usuario no encontrado', 'error');
+                    return;
+                }
+
+                const userDoc = snapshot.docs[0];
+                const userId = userDoc.id;
+                const userData = userDoc.data();
+
+                const adminCheck = await db.collection('admins').doc(userId).get();
+                if (adminCheck.exists) {
+                    showToast('⚠️ Advertencia', 'Ya es administrador', 'warning');
+                    return;
+                }
+
+                await db.collection('admins').doc(userId).set({
+                    email: userData.email,
+                    displayName: userData.displayName || userData.email,
+                    role: role,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdBy: auth.currentUser.uid,
+                    isActive: true
+                });
+
+                await db.collection('users').doc(userId).update({
+                    isAdmin: true,
+                    role: role,
+                    adminSince: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('✅ Admin Agregado', `${email} ahora es administrador`, 'success');
+                loadAdminsList();
+
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        async function removeAdmin(userId, email) {
+            if (currentUserRole !== 'super_admin') {
+                showToast('⛔ Acceso Denegado', 'Solo Super Admins pueden remover admins', 'error');
+                return;
+            }
+
+            if (userId === auth.currentUser.uid) {
+                showToast('⚠️ Advertencia', 'No puedes removerte a ti mismo', 'warning');
+                return;
+            }
+
+            if (!confirm(`¿Remover a ${email} como administrador?`)) return;
+
+            try {
+                await db.collection('admins').doc(userId).delete();
+                await db.collection('users').doc(userId).update({
+                    isAdmin: false,
+                    role: null,
+                    adminSince: null
+                });
+                showToast('✅ Admin Removido', `${email} ya no es administrador`, 'success');
+                loadAdminsList();
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        async function loadAdminsList() {
+            const list = document.getElementById('admins-list');
+            showLoading(list);
+
+            try {
+                const snapshot = await db.collection('admins').orderBy('createdAt', 'desc').get();
+                
+                if (snapshot.empty) {
+                    list.innerHTML = `
+                        <div class="no-applications">
+                            <i class="fas fa-user-shield"></i>
+                            <div>No hay administradores</div>
+                            <div style="font-size:14px;color:var(--gray);margin-top:10px;">Agrega el primer administrador</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const admin = doc.data();
+                    const el = document.createElement('div');
+                    el.className = 'admin-card';
+                    const isSelf = doc.id === auth.currentUser.uid;
+                    const isSuper = currentUserRole === 'super_admin';
+                    
+                    el.innerHTML = `
+                        <div class="admin-card-header">
+                            <div class="admin-avatar">${(admin.displayName || admin.email)[0].toUpperCase()}</div>
+                            <div class="admin-info">
+                                <div class="admin-name">${admin.displayName || 'Sin nombre'} ${isSelf ? '👤' : ''}</div>
+                                <div class="admin-email">${admin.email}</div>
+                                <span class="admin-role-badge ${admin.role === 'super_admin' ? 'super' : 'admin'}">
+                                    ${admin.role === 'super_admin' ? '⭐ Super Admin' : '👤 Admin'}
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <small style="color:var(--gray);">${admin.createdAt ? formatDate(admin.createdAt) : 'N/A'}</small>
+                            ${!isSelf && isSuper ? `
+                                <button class="btn-remove-admin" onclick="removeAdmin('${doc.id}','${admin.email}')">
+                                    <i class="fas fa-trash"></i> Remover
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    list.appendChild(el);
+                });
+
+            } catch (error) {
+                list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
+            }
+        }
+
+        // ========== NAVEGACIÓN ==========
+        function setupNavigation() {
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    showSection(section);
+                });
+            });
+
+            document.getElementById('sidebar-toggle').addEventListener('click', function() {
+                const sidebar = document.getElementById('admin-sidebar');
+                const main = document.getElementById('admin-main');
+                sidebar.classList.toggle('collapsed');
+                main.classList.toggle('expanded');
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-chevron-left');
+                icon.classList.toggle('fa-chevron-right');
+            });
+
+            document.getElementById('btn-logout').addEventListener('click', function() {
+                if (confirm('¿Cerrar sesión?')) {
+                    cleanupAllListeners();
+                    auth.signOut();
+                }
+            });
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${sectionId}-section`).classList.add('active');
+            
+            switch(sectionId) {
+                case 'dashboard': loadDashboard(); break;
+                case 'drivers': loadPendingDrivers(); break;
+                case 'verified-drivers': loadVerifiedDrivers(); break;
+                case 'earnings': loadEarnings(); break;
+                case 'credits': loadCredits(); break;
+                case 'payment-history': loadPaymentHistory(); break;
+                case 'chat': loadChats(); break;
+                case 'notifications': loadNotificationStats(); break;
+                case 'blacklist': loadBlacklist(); break;
+                case 'admins': loadAdminsList(); break;
+            }
+        }
+
+        // ========== DASHBOARD ==========
+        function loadDashboard() {
+            db.collection('users').get().then(qs => 
+                document.getElementById('total-users').textContent = qs.size.toLocaleString());
+            db.collection('users').where('isDriverVerified', '==', true).where('isOnline', '==', true).get()
+                .then(qs => document.getElementById('active-drivers').textContent = qs.size.toLocaleString());
+            
+            const today = new Date(); today.setHours(0,0,0,0);
+            db.collection('rideRequests').where('completedAt', '>=', today).get()
+                .then(qs => document.getElementById('today-rides').textContent = qs.size.toLocaleString());
+            db.collection('rideRequests').where('status', '==', 'completed').get()
+                .then(qs => { let total = 0; qs.forEach(d => total += d.data().price || 0); 
+                    document.getElementById('total-earnings').textContent = formatCurrency(total); });
+        }
+
+        // ========== PENDING DRIVERS ==========
+        function loadPendingDrivers() {
+            const list = document.getElementById('pending-drivers-list');
+            showLoading(list);
+            
+            db.collection('driverApplications').where('status', '==', 'pending')
+                .orderBy('appliedAt', 'desc').get()
+                .then(qs => {
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-user-clock"></i><div>No hay solicitudes pendientes</div></div>`;
+                        return;
+                    }
+                    list.innerHTML = '';
+                    qs.forEach(doc => {
+                        const app = doc.data();
+                        app.id = doc.id;
+                        list.appendChild(createDriverCard(app));
+                    });
+                });
+        }
+
+        function createDriverCard(app) {
+            const el = document.createElement('div');
+            el.className = 'driver-application';
+            const initials = getInitials(app.fullName);
+            
+            el.innerHTML = `
+                <div class="driver-app-info">
+                    <div class="driver-app-avatar">${initials}</div>
+                    <div class="driver-app-details">
+                        <div class="driver-app-name">${app.fullName || 'Sin nombre'}</div>
+                        <div class="driver-app-phone">📱 ${app.phone || 'N/A'}</div>
+                        <div class="driver-app-email">📧 ${app.email || 'N/A'}</div>
+                        <div class="driver-app-vehicle">🚗 ${app.vehicleBrand || ''} ${app.vehicleYear || ''} - ${app.vehiclePlate || ''}</div>
+                        <small>${formatDate(app.appliedAt)}</small>
+                    </div>
+                </div>
+                <div class="driver-app-actions">
+                    <button class="btn-view-details" onclick="viewDriverDetails('${app.id}')"><i class="fas fa-eye"></i> Ver</button>
+                    <button class="btn-approve" onclick="approveDriver('${app.id}','${app.fullName}','${app.userId}')"><i class="fas fa-check"></i> Aprobar</button>
+                    <button class="btn-reject" onclick="rejectDriver('${app.id}','${app.fullName}')"><i class="fas fa-times"></i> Rechazar</button>
+                </div>
+            `;
+            return el;
+        }
+
+        async function viewDriverDetails(id) {
+            const doc = await db.collection('driverApplications').doc(id).get();
+            if (!doc.exists) return;
+            const app = doc.data();
+            const body = document.getElementById('modal-body');
+            
+            body.innerHTML = `
+                <div class="info-grid">
+                    <div class="info-section">
+                        <div class="info-section-title"><i class="fas fa-user"></i> Personal</div>
+                        <div class="info-item"><span class="info-label">Nombre</span><span class="info-value">${app.fullName || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Cédula</span><span class="info-value">${app.idNumber || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Email</span><span class="info-value">${app.email || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value">${app.phone || 'N/A'}</span></div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-section-title"><i class="fas fa-car"></i> Vehículo</div>
+                        <div class="info-item"><span class="info-label">Marca</span><span class="info-value">${app.vehicleBrand || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Año</span><span class="info-value">${app.vehicleYear || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Color</span><span class="info-value">${app.vehicleColor || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Placa</span><span class="info-value">${app.vehiclePlate || 'N/A'}</span></div>
+                    </div>
+                </div>
+                <div class="photos-grid">
+                    <div class="photo-section">
+                        <div class="photo-title">Foto Perfil</div>
+                        <div class="photo-container" onclick="openImageModal('${app.profilePhoto}')">
+                            ${app.profilePhoto ? `<img src="${app.profilePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-user"></i><div>No disponible</div></div>`}
+                        </div>
+                    </div>
+                    <div class="photo-section">
+                        <div class="photo-title">Foto Vehículo</div>
+                        <div class="photo-container" onclick="openImageModal('${app.vehiclePhoto}')">
+                            ${app.vehiclePhoto ? `<img src="${app.vehiclePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-car"></i><div>No disponible</div></div>`}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('details-modal').classList.add('active');
+        }
+
+        async function approveDriver(id, name, userId) {
+            if (!confirm(`¿Aprobar a ${name}?`)) return;
+            try {
+                await db.collection('driverApplications').doc(id).update({
+                    status: 'approved',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: auth.currentUser.uid
+                });
+                await db.collection('users').doc(userId).update({
+                    isDriverVerified: true,
+                    verificationStatus: 'approved'
+                });
+                showToast('✅ Aprobado', `${name} es ahora conductor`, 'success');
+                loadPendingDrivers();
+                loadVerifiedDrivers();
+                updateCounters();
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        async function rejectDriver(id, name) {
+            if (!confirm(`¿Rechazar a ${name}?`)) return;
+            try {
+                await db.collection('driverApplications').doc(id).update({
+                    status: 'rejected',
+                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    rejectedBy: auth.currentUser.uid
+                });
+                showToast('Rechazado', `Solicitud de ${name} rechazada`, 'warning');
+                loadPendingDrivers();
+                updateCounters();
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ========== VERIFIED DRIVERS ==========
+        function loadVerifiedDrivers() {
+            const list = document.getElementById('verified-drivers-list');
+            showLoading(list);
+            
+            db.collection('users').where('isDriverVerified', '==', true).get()
+                .then(qs => {
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-user-check"></i><div>No hay conductores verificados</div></div>`;
+                        return;
+                    }
+                    list.innerHTML = '';
+                    qs.forEach(doc => {
+                        const driver = doc.data();
+                        const el = document.createElement('div');
+                        el.className = 'verified-driver-card';
+                        const status = driver.isOnline ? 'online' : 'offline';
+                        el.innerHTML = `
+                            <div class="verified-driver-avatar">${getInitials(driver.displayName)}</div>
+                            <div class="verified-driver-name">${driver.displayName || 'Usuario'}</div>
+                            <div class="verified-driver-email">${driver.email || 'N/A'}</div>
+                            <div class="verified-driver-vehicle">${driver.vehicleBrand || ''} ${driver.vehicleYear || ''}</div>
+                            <div class="verified-driver-plate">Placa: ${driver.vehiclePlate || 'N/A'}</div>
+                            <div class="verified-driver-status ${status}"><i class="fas fa-circle"></i> ${driver.isOnline ? 'En línea' : 'Desconectado'}</div>
+                            <button class="btn-revoke" onclick="revokeDriver('${doc.id}','${driver.displayName}')">
+                                <i class="fas fa-ban"></i> Revocar
+                            </button>
+                        `;
+                        list.appendChild(el);
+                    });
+                });
+        }
+
+        async function revokeDriver(id, name) {
+            if (!confirm(`¿Revocar verificación de ${name}?`)) return;
+            try {
+                await db.collection('users').doc(id).update({
+                    isDriverVerified: false,
+                    verificationStatus: 'revoked',
+                    revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    revokedBy: auth.currentUser.uid
+                });
+                showToast('Verificación Revocada', `La verificación de ${name} ha sido revocada`, 'warning');
+                loadVerifiedDrivers();
+                updateCounters();
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ========== EARNINGS ==========
+        function loadEarnings() {
+            // Ganancias hoy
+            db.collection('users').where('isDriverVerified', '==', true).get()
+                .then(qs => {
+                    let total = 0;
+                    qs.forEach(d => total += d.data().todayEarnings || 0);
+                    document.getElementById('total-earnings-today').textContent = formatCurrency(total);
+                });
+
+            // Pagos pendientes
+            db.collection('payments').where('status', '==', 'pending_approval').get()
+                .then(qs => {
+                    let total = 0;
+                    qs.forEach(d => total += d.data().amount || 0);
+                    document.getElementById('total-payments-pending').textContent = formatCurrency(total);
+                    document.getElementById('total-receipts-pending').textContent = qs.size;
+                });
+
+            // Comisiones
+            db.collection('users').where('isDriverVerified', '==', true).get()
+                .then(qs => {
+                    let total = 0;
+                    qs.forEach(d => total += (d.data().todayEarnings || 0) * 0.1);
+                    document.getElementById('total-comissions').textContent = formatCurrency(Math.round(total));
+                });
+
+            // Comprobantes pendientes
+            loadPendingReceipts();
+        }
+
+        function loadPendingReceipts() {
+            const list = document.getElementById('pending-receipts-list');
+            showLoading(list);
+
+            db.collection('payments').where('status', '==', 'pending_approval')
+                .orderBy('receiptSubmittedAt', 'desc').get()
+                .then(qs => {
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-receipt"></i><div>No hay comprobantes pendientes</div></div>`;
+                        return;
+                    }
+                    list.innerHTML = '';
+                    qs.forEach(doc => {
+                        const payment = doc.data();
+                        payment.id = doc.id;
+                        list.appendChild(createReceiptCard(payment));
+                    });
+                });
+        }
+
+        function createReceiptCard(payment) {
+            const el = document.createElement('div');
+            el.className = 'receipt-item';
+            
+            db.collection('users').doc(payment.driverId).get().then(doc => {
+                const name = doc.exists ? doc.data().displayName || 'Conductor' : 'Conductor';
+                const initials = getInitials(name);
+                el.innerHTML = `
+                    <div class="receipt-info">
+                        <div class="receipt-avatar">${initials}</div>
+                        <div class="receipt-details">
+                            <div class="receipt-driver-name">${name}</div>
+                            <div class="receipt-amount">💰 ${formatCurrency(payment.amount)}</div>
+                            <div class="receipt-date">📅 ${formatDate(payment.receiptSubmittedAt)}</div>
+                        </div>
+                    </div>
+                    <div class="receipt-actions">
+                        <button class="btn-view-receipt" onclick="viewReceipt('${payment.id}')"><i class="fas fa-eye"></i> Ver</button>
+                        <button class="btn-approve-receipt" onclick="approveReceipt('${payment.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
+                        <button class="btn-reject-receipt" onclick="rejectReceipt('${payment.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
+                    </div>
+                `;
+            });
+            return el;
+        }
+
+        async function viewReceipt(id) {
+            const doc = await db.collection('payments').doc(id).get();
+            if (!doc.exists) return;
+            const payment = doc.data();
+            const driver = await db.collection('users').doc(payment.driverId).get();
+            const name = driver.exists ? driver.data().displayName || 'Conductor' : 'Conductor';
+            
+            const body = document.getElementById('receipt-modal-body');
+            body.innerHTML = `
+                <div class="receipt-image-container">
+                    ${payment.receiptImage ? `<img src="${payment.receiptImage}" class="receipt-image">` : 
+                    `<div class="photo-placeholder"><i class="fas fa-receipt"></i><div>Sin imagen</div></div>`}
+                </div>
+                <div class="receipt-details-grid">
+                    <div class="receipt-detail-item"><span class="receipt-detail-label">Conductor</span><span class="receipt-detail-value">${name}</span></div>
+                    <div class="receipt-detail-item"><span class="receipt-detail-label">Monto</span><span class="receipt-detail-value">${formatCurrency(payment.amount)}</span></div>
+                    <div class="receipt-detail-item"><span class="receipt-detail-label">Fecha</span><span class="receipt-detail-value">${formatDate(payment.receiptSubmittedAt)}</span></div>
+                    <div class="receipt-detail-item"><span class="receipt-detail-label">Estado</span><span class="receipt-detail-value"><span style="color:var(--warning);font-weight:bold;">⏳ Pendiente</span></span></div>
+                </div>
+                <div class="receipt-actions-modal">
+                    <button class="btn-approve-receipt" onclick="approveReceipt('${payment.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
+                    <button class="btn-reject-receipt" onclick="rejectReceipt('${payment.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
+                </div>
+            `;
+            document.getElementById('receipt-modal').classList.add('active');
+        }
+
+        async function approveReceipt(id, name) {
+            if (!confirm(`¿Aprobar comprobante de ${name}?`)) return;
+            try {
+                const doc = await db.collection('payments').doc(id).get();
+                const payment = doc.data();
+                await db.collection('payments').doc(id).update({
+                    status: 'approved',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: auth.currentUser.uid
+                });
+                await db.collection('users').doc(payment.driverId).update({
+                    todayEarnings: 0,
+                    paymentPendingApproval: false
+                });
+                showToast('✅ Aprobado', `Comprobante de ${name} aprobado`, 'success');
+                loadEarnings();
+                loadPaymentHistory();
+                updateCounters();
+                document.getElementById('receipt-modal').classList.remove('active');
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        async function rejectReceipt(id, name) {
+            if (!confirm(`¿Rechazar comprobante de ${name}?`)) return;
+            try {
+                await db.collection('payments').doc(id).update({
+                    status: 'rejected',
+                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    rejectedBy: auth.currentUser.uid,
+                    rejectionReason: 'Rechazado por administrador'
+                });
+                showToast('Rechazado', `Comprobante de ${name} rechazado`, 'warning');
+                loadEarnings();
+                loadPaymentHistory();
+                updateCounters();
+                document.getElementById('receipt-modal').classList.remove('active');
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ========== CREDITS ==========
+        function loadCredits() {
+            const list = document.getElementById('pending-credits-list');
+            showLoading(list);
+
+            db.collection('paymentRequests').where('status', '==', 'pending')
+                .where('type', '==', 'credits_payment')
+                .orderBy('requestedAt', 'desc').get()
+                .then(qs => {
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-coins"></i><div>No hay solicitudes de créditos</div></div>`;
+                        return;
+                    }
+                    list.innerHTML = '';
+                    qs.forEach(doc => {
+                        const req = doc.data();
+                        req.id = doc.id;
+                        list.appendChild(createCreditCard(req));
+                    });
+                });
+        }
+
+        function createCreditCard(req) {
+            const el = document.createElement('div');
+            el.className = 'credits-request-item';
+            
+            db.collection('users').doc(req.driverId).get().then(doc => {
+                const name = doc.exists ? doc.data().displayName || 'Conductor' : 'Conductor';
+                const initials = getInitials(name);
+                el.innerHTML = `
+                    <div class="credits-request-info">
+                        <div class="credits-request-avatar">${initials}</div>
+                        <div class="credits-request-details">
+                            <div class="credits-request-driver-name">${name}</div>
+                            <div class="credits-request-amount">💰 ${formatCurrency(req.amount)}</div>
+                            <div class="credits-request-account">🏦 ${req.accountType || ''}: ${req.accountNumber || ''}</div>
+                            <div class="credits-request-date">📅 ${formatDate(req.requestedAt)}</div>
+                        </div>
+                    </div>
+                    <div class="credits-request-actions">
+                        <button class="btn-view-credits-details" onclick="viewCreditDetails('${req.id}')"><i class="fas fa-eye"></i> Ver</button>
+                        <button class="btn-approve-credits" onclick="approveCredit('${req.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
+                        <button class="btn-reject-credits" onclick="rejectCredit('${req.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
+                    </div>
+                `;
+            });
+            return el;
+        }
+
+        async function viewCreditDetails(id) {
+            const doc = await db.collection('paymentRequests').doc(id).get();
+            if (!doc.exists) return;
+            const req = doc.data();
+            const driver = await db.collection('users').doc(req.driverId).get();
+            const name = driver.exists ? driver.data().displayName || 'Conductor' : 'Conductor';
+            
+            const body = document.getElementById('credits-modal-body');
+            body.innerHTML = `
+                <div class="credits-details-grid">
+                    <div class="credits-detail-item"><span class="credits-detail-label">Conductor</span><span class="credits-detail-value">${name}</span></div>
+                    <div class="credits-detail-item"><span class="credits-detail-label">Monto</span><span class="credits-detail-value">${formatCurrency(req.amount)}</span></div>
+                    <div class="credits-detail-item"><span class="credits-detail-label">Tipo Cuenta</span><span class="credits-detail-value">${req.accountType || 'N/A'}</span></div>
+                    <div class="credits-detail-item"><span class="credits-detail-label">Número</span><span class="credits-detail-value">${req.accountNumber || 'N/A'}</span></div>
+                    <div class="credits-detail-item"><span class="credits-detail-label">Fecha</span><span class="credits-detail-value">${formatDate(req.requestedAt)}</span></div>
+                    <div class="credits-detail-item"><span class="credits-detail-label">Estado</span><span class="credits-detail-value"><span style="color:var(--warning);font-weight:bold;">⏳ Pendiente</span></span></div>
+                </div>
+                <div class="credits-actions-modal">
+                    <button class="btn-approve-credits" onclick="approveCredit('${req.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
+                    <button class="btn-reject-credits" onclick="rejectCredit('${req.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
+                </div>
+            `;
+            document.getElementById('credits-modal').classList.add('active');
+        }
+
+        async function approveCredit(id, name) {
+            if (!confirm(`¿Aprobar solicitud de ${name}?`)) return;
+            try {
+                await db.collection('paymentRequests').doc(id).update({
+                    status: 'approved',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: auth.currentUser.uid
+                });
+                showToast('✅ Aprobado', `Solicitud de ${name} aprobada`, 'success');
+                loadCredits();
+                updateCounters();
+                document.getElementById('credits-modal').classList.remove('active');
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        async function rejectCredit(id, name) {
+            if (!confirm(`¿Rechazar solicitud de ${name}?`)) return;
+            try {
+                await db.collection('paymentRequests').doc(id).update({
+                    status: 'rejected',
+                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    rejectedBy: auth.currentUser.uid,
+                    rejectionReason: 'Rechazado por administrador'
+                });
+                showToast('Rechazado', `Solicitud de ${name} rechazada`, 'warning');
+                loadCredits();
+                updateCounters();
+                document.getElementById('credits-modal').classList.remove('active');
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ========== PAYMENT HISTORY ==========
+        function loadPaymentHistory() {
+            const list = document.getElementById('payment-history-list');
+            showLoading(list);
+            
+            const typeFilter = document.getElementById('filter-type').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            
+            Promise.all([
+                db.collection('payments').where('status', 'in', ['approved', 'rejected', 'pending_approval']).get(),
+                db.collection('paymentRequests').where('status', 'in', ['approved', 'rejected', 'pending']).get()
+            ]).then(([payments, credits]) => {
+                filteredPayments = [];
+                payments.forEach(d => {
+                    const p = d.data(); p.id = d.id;
+                    p.type = 'receipt_payment';
+                    p.paymentDate = p.approvedAt || p.rejectedAt || p.receiptSubmittedAt;
+                    if (p.paymentDate) filteredPayments.push(p);
+                });
+                credits.forEach(d => {
+                    const p = d.data(); p.id = d.id;
+                    p.type = 'credits_payment';
+                    p.paymentDate = p.approvedAt || p.rejectedAt || p.requestedAt;
+                    p.amount = p.amount || 0;
+                    if (p.paymentDate) filteredPayments.push(p);
+                });
+                
+                filteredPayments = filteredPayments.filter(p => {
+                    if (typeFilter !== 'all' && p.type !== typeFilter) return false;
+                    if (statusFilter !== 'all') {
+                        if (statusFilter === 'pending' && p.status !== 'pending' && p.status !== 'pending_approval') return false;
+                        if (statusFilter !== 'pending' && p.status !== statusFilter) return false;
+                    }
+                    if (dateFrom || dateTo) {
+                        const pd = p.paymentDate ? p.paymentDate.toDate() : new Date();
+                        if (dateFrom && pd < new Date(dateFrom)) return false;
+                        if (dateTo) { const to = new Date(dateTo); to.setHours(23,59,59,999); if (pd > to) return false; }
+                    }
+                    return true;
+                });
+                filteredPayments.sort((a,b) => {
+                    const da = a.paymentDate ? a.paymentDate.toDate() : new Date(0);
+                    const db2 = b.paymentDate ? b.paymentDate.toDate() : new Date(0);
+                    return db2 - da;
+                });
+                updatePaymentStats();
+                displayPaymentPage(1);
+            }).catch(error => {
+                list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
+            });
+        }
+
+        function updatePaymentStats() {
+            document.getElementById('total-payments').textContent = filteredPayments.length;
+            document.getElementById('approved-payments').textContent = filteredPayments.filter(p => p.status === 'approved').length;
+            document.getElementById('pending-payments').textContent = filteredPayments.filter(p => p.status === 'pending' || p.status === 'pending_approval').length;
+            document.getElementById('rejected-payments').textContent = filteredPayments.filter(p => p.status === 'rejected').length;
+        }
+
+        function displayPaymentPage(page) {
+            currentPaymentPage = page;
+            const start = (page - 1) * paymentsPerPage;
+            const end = start + paymentsPerPage;
+            const pagePayments = filteredPayments.slice(start, end);
+            const list = document.getElementById('payment-history-list');
+            
+            if (pagePayments.length === 0) {
+                list.innerHTML = `<div class="no-applications"><i class="fas fa-history"></i><div>No hay pagos</div></div>`;
+                return;
+            }
+            
+            list.innerHTML = '';
+            Promise.all(pagePayments.map(p => createPaymentRow(p))).then(rows => {
+                rows.forEach(r => list.appendChild(r));
+                updatePagination();
+            });
+        }
+
+        async function createPaymentRow(payment) {
+            const el = document.createElement('div');
+            el.className = 'table-row';
+            const driver = await db.collection('users').doc(payment.driverId).get();
+            const name = driver.exists ? driver.data().displayName || 'Conductor' : 'Conductor';
+            
+            el.innerHTML = `
+                <div>${formatDate(payment.paymentDate)}</div>
+                <div>${name}</div>
+                <div>${formatCurrency(payment.amount)}</div>
+                <div>${payment.type === 'receipt_payment' ? 'Comprobante' : 'Créditos'}</div>
+                <div><span class="payment-status ${payment.status}">${payment.status === 'pending_approval' ? 'Pendiente' : payment.status}</span></div>
+                <div><button class="payment-details-btn" onclick="viewPaymentDetails('${payment.id}','${payment.type}')"><i class="fas fa-eye"></i> Ver</button></div>
+            `;
+            return el;
+        }
+
+        function updatePagination() {
+            const total = Math.ceil(filteredPayments.length / paymentsPerPage);
+            document.getElementById('page-info').textContent = `Página ${currentPaymentPage} de ${total}`;
+            document.getElementById('prev-page').disabled = currentPaymentPage <= 1;
+            document.getElementById('next-page').disabled = currentPaymentPage >= total;
+        }
+
+        // ========== CHAT ==========
+        function loadChats() {
+            const list = document.getElementById('active-chats-list');
+            showLoading(list);
+            
+            db.collection('chats').orderBy('lastMessageAt', 'desc').limit(30).get()
+                .then(qs => {
+                    list.innerHTML = '';
+                    unreadChatsCount = 0;
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-comments"></i><div>No hay chats activos</div></div>`;
+                        return;
+                    }
+                    qs.forEach(doc => {
+                        const chat = doc.data(); chat.id = doc.id;
+                        if (chat.unreadCount > 0) unreadChatsCount += chat.unreadCount;
+                        list.appendChild(createChatItem(chat));
+                    });
+                    updateCounters();
+                    setupChatListener();
+                });
+        }
+
+        function createChatItem(chat) {
+            const el = document.createElement('div');
+            el.className = 'active-chat-item';
+            el.dataset.chatId = chat.id;
+            const name = chat.userName || 'Usuario';
+            
+            el.innerHTML = `
+                <div class="chat-user-name">${name}</div>
+                <div class="chat-last-message">${chat.lastMessage || 'Sin mensajes'}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
+                    <small>${formatDateTime(chat.lastMessageAt)}</small>
+                    ${chat.unreadCount > 0 ? `<div class="chat-unread-count">${chat.unreadCount}</div>` : ''}
+                </div>
+            `;
+            el.addEventListener('click', () => selectChat(chat.id, name, chat.userEmail));
+            return el;
+        }
+
+        function setupChatListener() {
+            if (activeChatsListener) activeChatsListener();
+            activeChatsListener = db.collection('chats').orderBy('lastMessageAt', 'desc')
+                .onSnapshot(snapshot => {
+                    const list = document.getElementById('active-chats-list');
+                    list.innerHTML = '';
+                    unreadChatsCount = 0;
+                    snapshot.forEach(doc => {
+                        const chat = doc.data(); chat.id = doc.id;
+                        if (chat.unreadCount > 0) unreadChatsCount += chat.unreadCount;
+                        list.appendChild(createChatItem(chat));
+                    });
+                    updateCounters();
+                    if (snapshot.empty) list.innerHTML = `<div class="no-applications"><i class="fas fa-comments"></i><div>No hay chats activos</div></div>`;
+                });
+        }
+
+        function selectChat(id, name, email) {
+            document.querySelectorAll('.active-chat-item').forEach(i => i.classList.remove('active'));
+            const selected = document.querySelector(`[data-chat-id="${id}"]`);
+            if (selected) selected.classList.add('active');
+            
+            currentChatId = id;
+            document.getElementById('current-chat-name').textContent = name;
+            document.getElementById('current-chat-status').textContent = email || 'Usuario';
+            document.getElementById('current-chat-avatar').textContent = getInitials(name);
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('btn-send-chat').disabled = false;
+            
+            loadChatMessages(id);
+            markChatAsRead(id);
+        }
+
+        function loadChatMessages(id) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><div>Cargando mensajes...</div></div>';
+            
+            if (chatListener) chatListener();
+            chatListener = db.collection('chats').doc(id).collection('messages')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot(snapshot => {
+                    container.innerHTML = '';
+                    if (snapshot.empty) {
+                        container.innerHTML = `<div class="no-messages"><i class="fas fa-comments"></i><div>No hay mensajes</div></div>`;
+                        return;
+                    }
+                    snapshot.forEach(doc => {
+                        const msg = doc.data();
+                        const el = document.createElement('div');
+                        el.className = `chat-message ${msg.sender === 'admin' ? 'admin' : 'user'}`;
+                        el.innerHTML = `
+                            <div>${msg.text}</div>
+                            <div class="message-time">${formatDateTime(msg.timestamp)}</div>
+                        `;
+                        container.appendChild(el);
+                    });
+                    container.scrollTop = container.scrollHeight;
+                    markChatAsRead(id);
+                });
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
+            
+            const msg = {
+                text: text,
+                sender: 'admin',
+                senderId: auth.currentUser.uid,
+                senderName: adminData?.displayName || 'Administrador',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            db.collection('chats').doc(currentChatId).collection('messages').add(msg)
+                .then(() => {
+                    db.collection('chats').doc(currentChatId).update({
+                        lastMessage: text,
+                        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        unreadCount: 0
+                    });
+                    input.value = '';
+                });
+        }
+
+        function markChatAsRead(id) {
+            db.collection('chats').doc(id).update({ unreadCount: 0 });
+        }
+
+        function clearChat(id) {
+            if (!id || !confirm('¿Limpiar todos los mensajes?')) return;
+            db.collection('chats').doc(id).collection('messages').get()
+                .then(qs => {
+                    const batch = db.batch();
+                    qs.forEach(d => batch.delete(d.ref));
+                    return batch.commit();
+                })
+                .then(() => {
+                    db.collection('chats').doc(id).update({
+                        lastMessage: 'Chat vacío',
+                        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        unreadCount: 0
+                    });
+                    showToast('✅ Limpiado', 'Chat limpiado correctamente', 'success');
+                    loadChatMessages(id);
+                });
+        }
+
+        // ========== NOTIFICATIONS ==========
+        async function sendNotification(message, target) {
+            if (!message || message.trim().length < 5) {
+                showToast('❌ Error', 'Mensaje muy corto', 'error');
+                return;
+            }
+
+            const targetText = target === 'all' ? 'todos' : target === 'passengers' ? 'pasajeros' : 'conductores';
+            
+            try {
+                await db.collection('adminNotifications').add({
+                    message: message.trim(),
+                    target: target,
+                    sentBy: auth.currentUser.uid,
+                    sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    sentTo: targetText,
+                    senderName: adminData?.displayName || 'Administrador'
+                });
+
+                // Obtener usuarios según target
+                let query = db.collection('users');
+                if (target === 'passengers') query = query.where('isDriverVerified', '==', false);
+                else if (target === 'drivers') query = query.where('isDriverVerified', '==', true);
+                
+                const users = await query.get();
+                let count = 0;
+                const batch = db.batch();
+                
+                for (const doc of users.docs) {
+                    const notifRef = db.collection('userNotifications').doc();
+                    batch.set(notifRef, {
+                        userId: doc.id,
+                        type: 'admin_notification',
+                        title: '📢 Mensaje del Administrador',
+                        message: message.trim(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        read: false,
+                        fromAdmin: true,
+                        adminName: adminData?.displayName || 'Administrador'
+                    });
+                    count++;
+                }
+                
+                await batch.commit();
+                showToast('✅ Enviado', `Notificación enviada a ${count} usuarios (${targetText})`, 'success');
+                document.getElementById('notification-message').value = '';
+                loadNotificationStats();
+                
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        function loadNotificationStats() {
+            db.collection('adminNotifications').get()
+                .then(qs => document.getElementById('total-notifications-sent').textContent = qs.size);
+            
+            db.collection('userNotifications').where('fromAdmin', '==', true).get()
+                .then(qs => {
+                    const unique = new Set();
+                    qs.forEach(d => { if (d.data().userId) unique.add(d.data().userId); });
+                    document.getElementById('total-users-notified').textContent = unique.size;
+                });
+        }
+
+        // ========== BLACKLIST ==========
+        function loadBlacklist() {
+            const list = document.getElementById('blacklist-items');
+            showLoading(list);
+            
+            db.collection('blacklist').orderBy('addedAt', 'desc').get()
+                .then(qs => {
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-ban"></i><div>No hay placas en lista negra</div></div>`;
+                        return;
+                    }
+                    list.innerHTML = '';
+                    qs.forEach(doc => {
+                        const item = doc.data();
+                        const el = document.createElement('div');
+                        el.className = 'blacklist-item';
+                        el.innerHTML = `
+                            <div>
+                                <div class="blacklist-plate">🚫 ${item.plate}</div>
+                                <div class="blacklist-reason">${item.reason || 'Sin motivo'}</div>
+                                <small>${formatDate(item.addedAt)}</small>
+                            </div>
+                            <button class="btn-remove-blacklist" onclick="removeFromBlacklist('${doc.id}','${item.plate}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        `;
+                        list.appendChild(el);
+                    });
+                });
+        }
+
+        function addToBlacklist() {
+            const plate = document.getElementById('blacklist-plate').value.toUpperCase().trim();
+            const reason = document.getElementById('blacklist-reason').value.trim();
+            
+            if (!plate || !reason) {
+                showToast('❌ Error', 'Completa todos los campos', 'error');
+                return;
+            }
+            
+            db.collection('blacklist').where('plate', '==', plate).get()
+                .then(qs => {
+                    if (!qs.empty) {
+                        showToast('⚠️ Advertencia', 'La placa ya existe', 'warning');
+                        return;
+                    }
+                    return db.collection('blacklist').add({
+                        plate, reason,
+                        addedBy: auth.currentUser.uid,
+                        addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    showToast('✅ Agregada', `Placa ${plate} agregada`, 'success');
+                    document.getElementById('blacklist-plate').value = '';
+                    document.getElementById('blacklist-reason').value = '';
+                    loadBlacklist();
+                })
+                .catch(error => showToast('❌ Error', error.message, 'error'));
+        }
+
+        function removeFromBlacklist(id, plate) {
+            if (!confirm(`¿Eliminar ${plate} de lista negra?`)) return;
+            db.collection('blacklist').doc(id).delete()
+                .then(() => {
+                    showToast('✅ Eliminada', `Placa ${plate} eliminada`, 'success');
+                    loadBlacklist();
+                })
+                .catch(error => showToast('❌ Error', error.message, 'error'));
+        }
+
+        // ========== UTILIDADES ADICIONALES ==========
+        function openImageModal(src) {
+            if (!src) { showToast('❌ Error', 'No hay imagen', 'error'); return; }
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.style.zIndex = '1001';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:90%;max-height:90%;">
+                    <div class="modal-header">
+                        <div class="modal-title">Imagen</div>
+                        <button class="modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div style="padding:20px;text-align:center;">
+                        <img src="${src}" style="max-width:100%;max-height:70vh;border-radius:8px;">
+                    </div>
+                </div>
+            `;
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+            document.body.appendChild(modal);
+        }
+
+        function updateCounters() {
+            db.collection('driverApplications').where('status', '==', 'pending').get()
+                .then(qs => {
+                    document.getElementById('pending-drivers-count').textContent = qs.size;
+                    document.getElementById('pending-applications').textContent = qs.size;
+                });
+            db.collection('paymentRequests').where('status', '==', 'pending').where('type', '==', 'credits_payment').get()
+                .then(qs => {
+                    document.getElementById('pending-credits-count').textContent = qs.size;
+                    document.getElementById('pending-credits').textContent = qs.size;
+                });
+            db.collection('payments').where('status', '==', 'pending_approval').get()
+                .then(qs => document.getElementById('pending-receipts').textContent = qs.size);
+            document.getElementById('unread-chats-count').textContent = unreadChatsCount;
+            document.getElementById('unread-chats').textContent = unreadChatsCount;
+        }
+
+        // ========== LIMPIEZA ==========
+        function cleanupAllListeners() {
+            [dashboardListeners, driversListeners, earningsListeners, creditsListeners, blacklistListeners]
+                .forEach(list => { list.forEach(l => l()); list.length = 0; });
+            if (chatListener) chatListener();
+            if (activeChatsListener) activeChatsListener();
+            if (paymentHistoryListener) paymentHistoryListener();
+        }
+
+        // ========== EVENT LISTENERS ==========
+        function setupEventListeners() {
+            // Payment history
+            document.getElementById('btn-apply-filters').addEventListener('click', loadPaymentHistory);
+            document.getElementById('btn-reset-filters').addEventListener('click', () => {
+                document.getElementById('filter-type').value = 'all';
+                document.getElementById('filter-status').value = 'all';
+                document.getElementById('filter-date-from').value = '';
+                document.getElementById('filter-date-to').value = '';
+                loadPaymentHistory();
+            });
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPaymentPage > 1) displayPaymentPage(currentPaymentPage - 1);
+            });
+            document.getElementById('next-page').addEventListener('click', () => {
+                const total = Math.ceil(filteredPayments.length / paymentsPerPage);
+                if (currentPaymentPage < total) displayPaymentPage(currentPaymentPage + 1);
+            });
+
+            // Chat
+            document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
+            document.getElementById('chat-input').addEventListener('keypress', e => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+            document.getElementById('btn-refresh-chats').addEventListener('click', loadChats);
+            document.getElementById('btn-clear-chat').addEventListener('click', () => {
+                if (currentChatId) clearChat(currentChatId);
+            });
+
+            // Notifications
+            document.querySelectorAll('.notification-target').forEach(t => {
+                t.addEventListener('click', function() {
+                    document.querySelectorAll('.notification-target').forEach(x => x.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            document.getElementById('btn-send-notification').addEventListener('click', async function() {
+                const msg = document.getElementById('notification-message').value.trim();
+                const target = document.querySelector('.notification-target.active').dataset.target;
+                await sendNotification(msg, target);
+            });
+            document.getElementById('notification-message').addEventListener('input', function() {
+                const preview = document.getElementById('notification-preview');
+                const msg = document.getElementById('preview-message');
+                if (this.value.trim().length > 0) {
+                    preview.style.display = 'block';
+                    msg.textContent = this.value;
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            // Blacklist
+            document.getElementById('btn-add-blacklist').addEventListener('click', addToBlacklist);
+
+            // Admin management
+            document.getElementById('btn-add-admin').addEventListener('click', async function() {
+                const email = document.getElementById('new-admin-email').value.trim();
+                const role = document.getElementById('new-admin-role').value;
+                if (!email) { showToast('❌ Error', 'Ingresa un email', 'error'); return; }
+                await addAdmin(email, role);
+                document.getElementById('new-admin-email').value = '';
+            });
+            document.getElementById('new-admin-email').addEventListener('keypress', e => {
+                if (e.key === 'Enter') document.getElementById('btn-add-admin').click();
+            });
+
+            // Modals
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal-overlay').classList.remove('active');
+                });
+            });
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) this.classList.remove('active');
+                });
+            });
+        }
+
+        // ========== INICIALIZACIÓN ==========
+        function initializeAdmin() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('admin-panel').classList.add('active');
+            
+            document.getElementById('user-avatar').textContent = getInitials(auth.currentUser?.email || 'A');
+            document.getElementById('user-name').textContent = adminData?.displayName || auth.currentUser?.email || 'Admin';
+            document.getElementById('user-role-badge').textContent = currentUserRole === 'super_admin' ? '⭐ Super Admin' : '👤 Admin';
+            
+            loadDashboard();
+            loadPendingDrivers();
+            loadVerifiedDrivers();
+            loadEarnings();
+            loadCredits();
+            loadPaymentHistory();
+            loadChats();
+            loadNotificationStats();
+            loadBlacklist();
+            loadAdminsList();
+            updateCounters();
+            
+            showToast('✅ Panel Listo', 'Bienvenido al panel de administración', 'success');
+        }
+
+        // ========== MAIN ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            setupAuth();
+            setupNavigation();
+            setupEventListeners();
+
+            // Monitor auth state
+            auth.onAuthStateChanged(async user => {
+                if (user) {
+                    const adminCheck = await checkIfUserIsAdmin(user.uid);
+                    if (adminCheck.isAdmin) {
+                        currentUserRole = adminCheck.role;
+                        adminData = adminCheck.data;
+                        initializeAdmin();
+                    } else {
+                        await auth.signOut();
+                        document.getElementById('auth-screen').style.display = 'flex';
+                        document.getElementById('admin-panel').classList.remove('active');
+                        showToast('⛔ Acceso Denegado', 'No eres administrador', 'error');
+                    }
+                } else {
+                    document.getElementById('auth-screen').style.display = 'flex';
+                    document.getElementById('admin-panel').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
