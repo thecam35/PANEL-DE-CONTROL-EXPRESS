@@ -931,7 +931,7 @@
         /* Verified Drivers */
         .verified-drivers-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 15px;
         }
 
@@ -939,7 +939,6 @@
             background: var(--input-bg);
             border-radius: 10px;
             padding: 20px;
-            text-align: center;
             border-left: 4px solid var(--success);
             transition: transform 0.2s;
         }
@@ -967,18 +966,42 @@
             margin-bottom: 5px;
             color: var(--text);
             font-size: 16px;
+            text-align: center;
         }
 
         .verified-driver-phone {
             color: var(--gray);
             font-size: 14px;
             margin-bottom: 5px;
+            text-align: center;
         }
 
-        .verified-driver-email, .verified-driver-vehicle, .verified-driver-plate {
+        .verified-driver-email {
             color: var(--gray);
             font-size: 14px;
             margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .verified-driver-vehicle {
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .verified-driver-plate {
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 5px;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            width: 100%;
         }
 
         .verified-driver-status {
@@ -988,6 +1011,8 @@
             font-weight: 600;
             margin: 10px 0;
             display: inline-block;
+            width: 100%;
+            text-align: center;
         }
 
         .verified-driver-status.online {
@@ -1000,6 +1025,18 @@
             color: white;
         }
 
+        .verified-driver-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .verified-driver-actions .btn-view-details {
+            flex: 1;
+            justify-content: center;
+        }
+
         .btn-revoke {
             background: var(--danger);
             color: white;
@@ -1008,16 +1045,59 @@
             border-radius: 5px;
             font-size: 12px;
             cursor: pointer;
-            width: 100%;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
-            margin-top: 10px;
             transition: opacity 0.2s;
         }
 
         .btn-revoke:hover {
+            opacity: 0.85;
+        }
+
+        /* Fix Drivers Button */
+        .fix-drivers-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-fix-drivers {
+            background: var(--warning);
+            color: var(--dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-fix-drivers:hover {
+            opacity: 0.85;
+        }
+
+        .btn-fix-specific {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-fix-specific:hover {
             opacity: 0.85;
         }
 
@@ -2518,6 +2598,14 @@
                 <div class="content-section" id="verified-drivers-section">
                     <div class="admin-section">
                         <div class="section-title"><i class="fas fa-user-check"></i> Conductores Verificados</div>
+                        <div class="fix-drivers-section">
+                            <button class="btn-fix-drivers" onclick="fixAllDrivers()">
+                                <i class="fas fa-wrench"></i> Corregir Todos los Conductores
+                            </button>
+                            <button class="btn-fix-specific" onclick="promptFixDriver()">
+                                <i class="fas fa-user-edit"></i> Corregir Conductor Específico
+                            </button>
+                        </div>
                         <div class="verified-drivers-list" id="verified-drivers-list">
                             <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
                         </div>
@@ -2770,7 +2858,6 @@
 
         // ========== FUNCIÓN PARA OBTENER TELÉFONO CORRECTAMENTE ==========
         function getUserPhone(userData) {
-            // Intentar obtener teléfono de diferentes campos posibles
             if (userData.phoneNumber) return userData.phoneNumber;
             if (userData.phone) return userData.phone;
             if (userData.phoneNumberValue) return userData.phoneNumberValue;
@@ -2820,6 +2907,14 @@
             if (!timestamp) return 'N/A';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
             return date.toLocaleString('es-CO');
+        }
+
+        // ========== FUNCIÓN PARA PROMPT DE FIX ==========
+        function promptFixDriver() {
+            const uid = prompt('Ingresa el userId del conductor (copia el userId de la solicitud en Firebase):');
+            if (uid) {
+                fixDriverData(uid);
+            }
         }
 
         // ========== SISTEMA DE AUTENTICACIÓN ==========
@@ -3154,7 +3249,6 @@
                     for (const doc of qs.docs) {
                         const app = doc.data();
                         app.id = doc.id;
-                        // Obtener datos del usuario para el teléfono
                         let phone = 'N/A';
                         if (app.userId) {
                             try {
@@ -3200,7 +3294,6 @@
             if (!doc.exists) return;
             const app = doc.data();
             
-            // Obtener teléfono del usuario
             let phone = app.phone || 'N/A';
             if (app.userId) {
                 try {
@@ -3247,23 +3340,71 @@
             document.getElementById('details-modal').classList.add('active');
         }
 
+        // ========== FUNCIÓN APPROVE DRIVER CORREGIDA ==========
         async function approveDriver(id, name, userId) {
             if (!confirm(`¿Aprobar a ${name}?`)) return;
             try {
+                const doc = await db.collection('driverApplications').doc(id).get();
+                if (!doc.exists) {
+                    showToast('❌ Error', 'No se encontró la solicitud', 'error');
+                    return;
+                }
+                const app = doc.data();
+                
+                console.log('📝 Datos de la solicitud:', app);
+                console.log('📝 userId de la solicitud:', app.userId);
+                console.log('📝 userId recibido:', userId);
+                
                 await db.collection('driverApplications').doc(id).update({
                     status: 'approved',
                     approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     approvedBy: auth.currentUser.uid
                 });
-                await db.collection('users').doc(userId).update({
+                
+                let userPhone = app.phone || '';
+                if (userPhone === 'No proporcionado' || !userPhone || userPhone === '') {
+                    try {
+                        const userDoc = await db.collection('users').doc(userId).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            userPhone = userData.phone || userData.phoneNumber || userData.telefono || 'No proporcionado';
+                        }
+                    } catch (e) {
+                        console.error('Error obteniendo teléfono del usuario:', e);
+                    }
+                }
+                
+                const userUpdateData = {
                     isDriverVerified: true,
-                    verificationStatus: 'approved'
-                });
+                    verificationStatus: 'approved',
+                    verifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    displayName: app.fullName || name,
+                    email: app.email || '',
+                    idNumber: app.idNumber || '',
+                    phone: userPhone || app.phone || 'No proporcionado',
+                    
+                    vehicleBrand: app.vehicleBrand || '',
+                    vehicleModel: app.vehicleModel || app.vehicleBrand || '',
+                    vehicleYear: app.vehicleYear || '',
+                    vehicleColor: app.vehicleColor || '',
+                    vehiclePlate: app.vehiclePlate ? app.vehiclePlate.toUpperCase().trim() : '',
+                    vehiclePhoto: app.vehiclePhoto || '',
+                    profilePhoto: app.profilePhoto || app.photoURL || ''
+                };
+                
+                console.log('🚗 Datos a guardar en usuario:', userUpdateData);
+                console.log('🚗 userId a actualizar:', userId);
+                
+                await db.collection('users').doc(userId).set(userUpdateData, { merge: true });
+                
                 showToast('✅ Aprobado', `${name} es ahora conductor`, 'success');
+                
                 loadPendingDrivers();
                 loadVerifiedDrivers();
                 updateCounters();
+                
             } catch (error) {
+                console.error('❌ Error al aprobar:', error);
                 showToast('❌ Error', error.message, 'error');
             }
         }
@@ -3280,6 +3421,127 @@
                 loadPendingDrivers();
                 updateCounters();
             } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ========== FUNCIONES PARA CORREGIR CONDUCTORES ==========
+        async function fixDriverData(userId) {
+            try {
+                const appsSnapshot = await db.collection('driverApplications')
+                    .where('userId', '==', userId)
+                    .where('status', '==', 'approved')
+                    .get();
+                
+                if (appsSnapshot.empty) {
+                    showToast('❌ Error', 'No se encontró solicitud aprobada para este usuario', 'error');
+                    return;
+                }
+                
+                const appDoc = appsSnapshot.docs[0];
+                const appData = appDoc.data();
+                
+                console.log('📝 Datos de la solicitud encontrados:', appData);
+                
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    showToast('❌ Error', 'Usuario no encontrado', 'error');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                console.log('👤 Datos actuales del usuario:', userData);
+                
+                const updateData = {
+                    displayName: appData.fullName || userData.displayName,
+                    email: appData.email || userData.email,
+                    idNumber: appData.idNumber || userData.idNumber,
+                    phone: appData.phone || userData.phone,
+                    
+                    vehicleBrand: appData.vehicleBrand || userData.vehicleBrand || '',
+                    vehicleModel: appData.vehicleModel || userData.vehicleModel || appData.vehicleBrand || '',
+                    vehicleYear: appData.vehicleYear || userData.vehicleYear || '',
+                    vehicleColor: appData.vehicleColor || userData.vehicleColor || '',
+                    vehiclePlate: appData.vehiclePlate ? appData.vehiclePlate.toUpperCase().trim() : userData.vehiclePlate || '',
+                    vehiclePhoto: appData.vehiclePhoto || userData.vehiclePhoto || '',
+                    profilePhoto: appData.profilePhoto || appData.photoURL || userData.photoURL || '',
+                    
+                    isDriverVerified: true,
+                    verificationStatus: 'approved',
+                    fixedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                console.log('📦 Datos a actualizar:', updateData);
+                
+                await db.collection('users').doc(userId).update(updateData);
+                
+                showToast('✅ Corregido', `Datos del vehículo actualizados para ${appData.fullName}`, 'success');
+                
+                loadVerifiedDrivers();
+                
+            } catch (error) {
+                console.error('❌ Error al corregir:', error);
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        async function fixAllDrivers() {
+            try {
+                const snapshot = await db.collection('users')
+                    .where('isDriverVerified', '==', true)
+                    .get();
+                
+                let fixed = 0;
+                let errors = 0;
+                let details = [];
+                
+                for (const doc of snapshot.docs) {
+                    const userId = doc.id;
+                    const userData = doc.data();
+                    
+                    if (userData.vehiclePlate && userData.vehicleBrand) {
+                        console.log(`✅ ${userId} ya tiene datos: ${userData.vehiclePlate} - ${userData.vehicleBrand}`);
+                        continue;
+                    }
+                    
+                    const appsSnapshot = await db.collection('driverApplications')
+                        .where('userId', '==', userId)
+                        .where('status', '==', 'approved')
+                        .get();
+                    
+                    if (appsSnapshot.empty) {
+                        console.log(`⚠️ ${userId}: No tiene solicitud aprobada`);
+                        errors++;
+                        continue;
+                    }
+                    
+                    const appData = appsSnapshot.docs[0].data();
+                    
+                    await db.collection('users').doc(userId).update({
+                        vehicleBrand: appData.vehicleBrand || '',
+                        vehicleModel: appData.vehicleModel || appData.vehicleBrand || '',
+                        vehicleYear: appData.vehicleYear || '',
+                        vehicleColor: appData.vehicleColor || '',
+                        vehiclePlate: appData.vehiclePlate ? appData.vehiclePlate.toUpperCase().trim() : '',
+                        vehiclePhoto: appData.vehiclePhoto || '',
+                        profilePhoto: appData.profilePhoto || appData.photoURL || '',
+                        displayName: appData.fullName || userData.displayName,
+                        idNumber: appData.idNumber || userData.idNumber,
+                        phone: appData.phone || userData.phone,
+                        fixedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    fixed++;
+                    details.push(`${appData.fullName}: ${appData.vehiclePlate} (${appData.vehicleBrand})`);
+                    console.log(`✅ ${userId}: Corregido - ${appData.vehiclePlate} - ${appData.vehicleBrand}`);
+                }
+                
+                console.log('📋 Resumen:', details.join('\n'));
+                showToast('✅ Completado', `Se corrigieron ${fixed} conductores, ${errors} errores`, 'success');
+                loadVerifiedDrivers();
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
                 showToast('❌ Error', error.message, 'error');
             }
         }
@@ -3302,21 +3564,151 @@
                         el.className = 'verified-driver-card';
                         const status = driver.isOnline ? 'online' : 'offline';
                         const phone = getUserPhone(driver);
+                        
+                        const vehicleParts = [];
+                        if (driver.vehicleBrand) vehicleParts.push(driver.vehicleBrand);
+                        if (driver.vehicleModel) vehicleParts.push(driver.vehicleModel);
+                        if (driver.vehicleYear) vehicleParts.push(driver.vehicleYear);
+                        const vehicleInfo = vehicleParts.join(' ') || 'Vehículo no registrado';
+                        
                         el.innerHTML = `
-                            <div class="verified-driver-avatar">${getInitials(driver.displayName)}</div>
-                            <div class="verified-driver-name">${driver.displayName || 'Usuario'}</div>
+                            <div class="verified-driver-avatar">${getInitials(driver.displayName || driver.fullName || 'U')}</div>
+                            <div class="verified-driver-name">${driver.displayName || driver.fullName || 'Usuario'}</div>
                             <div class="verified-driver-phone">📱 ${phone}</div>
-                            <div class="verified-driver-email">${driver.email || 'N/A'}</div>
-                            <div class="verified-driver-vehicle">${driver.vehicleBrand || ''} ${driver.vehicleYear || ''}</div>
-                            <div class="verified-driver-plate">Placa: ${driver.vehiclePlate || 'N/A'}</div>
+                            <div class="verified-driver-email">📧 ${driver.email || 'N/A'}</div>
+                            <div class="verified-driver-vehicle">🚗 ${vehicleInfo}</div>
+                            <div class="verified-driver-plate">🔢 Placa: <strong style="color:${driver.vehiclePlate ? 'var(--primary)' : 'var(--gray)'};">${driver.vehiclePlate || 'NO REGISTRADA'}</strong></div>
+                            ${driver.vehicleColor ? `<div style="text-align:center;font-size:13px;color:var(--gray);">🎨 Color: ${driver.vehicleColor}</div>` : ''}
                             <div class="verified-driver-status ${status}"><i class="fas fa-circle"></i> ${driver.isOnline ? 'En línea' : 'Desconectado'}</div>
-                            <button class="btn-revoke" onclick="revokeDriver('${doc.id}','${driver.displayName}')">
-                                <i class="fas fa-ban"></i> Revocar
-                            </button>
+                            <div class="verified-driver-actions">
+                                <button class="btn-view-details" onclick="viewVerifiedDriverDetails('${doc.id}')">
+                                    <i class="fas fa-eye"></i> Ver Detalles
+                                </button>
+                                <button class="btn-revoke" onclick="revokeDriver('${doc.id}','${driver.displayName || driver.fullName || 'Usuario'}')">
+                                    <i class="fas fa-ban"></i> Revocar
+                                </button>
+                            </div>
                         `;
                         list.appendChild(el);
                     });
+                })
+                .catch(error => {
+                    console.error('Error cargando conductores:', error);
+                    list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
                 });
+        }
+
+        // ========== VER DETALLES DE CONDUCTOR VERIFICADO ==========
+        async function viewVerifiedDriverDetails(userId) {
+            try {
+                const doc = await db.collection('users').doc(userId).get();
+                if (!doc.exists) {
+                    showToast('❌ Error', 'Usuario no encontrado', 'error');
+                    return;
+                }
+                const driver = doc.data();
+                
+                console.log('👤 Datos del conductor:', driver);
+                
+                let phone = driver.phone || driver.phoneNumber || driver.telefono || 'N/A';
+                
+                const body = document.getElementById('modal-body');
+                body.innerHTML = `
+                    <div class="info-grid">
+                        <div class="info-section">
+                            <div class="info-section-title"><i class="fas fa-user"></i> Información Personal</div>
+                            <div class="info-item">
+                                <span class="info-label">Nombre</span>
+                                <span class="info-value">${driver.displayName || driver.fullName || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Email</span>
+                                <span class="info-value">${driver.email || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Teléfono</span>
+                                <span class="info-value">${phone}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Cédula</span>
+                                <span class="info-value">${driver.idNumber || driver.cedula || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Estado</span>
+                                <span class="info-value">
+                                    <span class="verified-driver-status ${driver.isOnline ? 'online' : 'offline'}" style="display:inline-block;width:auto;">
+                                        ${driver.isOnline ? '🟢 En línea' : '🔴 Desconectado'}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Viajes Completados</span>
+                                <span class="info-value">${driver.completedRides || 0}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Ganancias Totales</span>
+                                <span class="info-value">${formatCurrency(driver.totalEarnings || 0)}</span>
+                            </div>
+                        </div>
+                        <div class="info-section">
+                            <div class="info-section-title"><i class="fas fa-car"></i> Información del Vehículo</div>
+                            <div class="info-item">
+                                <span class="info-label">Marca</span>
+                                <span class="info-value" style="font-weight:600;">${driver.vehicleBrand || 'No especificada'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Modelo</span>
+                                <span class="info-value" style="font-weight:600;">${driver.vehicleModel || driver.vehicleBrand || 'No especificado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Año</span>
+                                <span class="info-value" style="font-weight:600;">${driver.vehicleYear || 'No especificado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Color</span>
+                                <span class="info-value" style="font-weight:600;">${driver.vehicleColor || 'No especificado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Placa</span>
+                                <span class="info-value" style="font-size:18px;color:var(--primary);font-weight:700;">
+                                    ${driver.vehiclePlate || 'NO REGISTRADA'}
+                                </span>
+                            </div>
+                            <div class="info-item" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--input-bg);">
+                                <span class="info-label">Estado Verificación</span>
+                                <span class="info-value">
+                                    <span class="payment-status approved" style="display:inline-block;">✅ Verificado</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="photos-grid">
+                        <div class="photo-section">
+                            <div class="photo-title">Foto de Perfil</div>
+                            <div class="photo-container" onclick="openImageModal('${driver.photoURL || driver.profilePhoto}')">
+                                ${(driver.photoURL || driver.profilePhoto) ? 
+                                    `<img src="${driver.photoURL || driver.profilePhoto}">` : 
+                                    `<div class="photo-placeholder"><i class="fas fa-user"></i><div>No disponible</div></div>`
+                                }
+                            </div>
+                        </div>
+                        <div class="photo-section">
+                            <div class="photo-title">Foto del Vehículo</div>
+                            <div class="photo-container" onclick="openImageModal('${driver.vehiclePhoto}')">
+                                ${driver.vehiclePhoto ? 
+                                    `<img src="${driver.vehiclePhoto}">` : 
+                                    `<div class="photo-placeholder"><i class="fas fa-car"></i><div>No disponible</div></div>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('details-modal').classList.add('active');
+                
+            } catch (error) {
+                console.error('❌ Error al ver detalles:', error);
+                showToast('❌ Error', error.message, 'error');
+            }
         }
 
         async function revokeDriver(id, name) {
