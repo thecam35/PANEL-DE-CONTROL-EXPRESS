@@ -969,6 +969,12 @@
             font-size: 16px;
         }
 
+        .verified-driver-phone {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
         .verified-driver-email, .verified-driver-vehicle, .verified-driver-plate {
             color: var(--gray);
             font-size: 14px;
@@ -1423,6 +1429,12 @@
             font-size: 16px;
         }
 
+        .receipt-driver-phone {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
         .receipt-amount, .receipt-date {
             color: var(--gray);
             font-size: 14px;
@@ -1590,6 +1602,12 @@
             margin-bottom: 5px;
             color: var(--text);
             font-size: 16px;
+        }
+
+        .credits-request-driver-phone {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 2px;
         }
 
         .credits-request-amount, .credits-request-account, .credits-request-date {
@@ -1777,6 +1795,12 @@
         .chat-user-name {
             font-weight: 600;
             margin-bottom: 5px;
+        }
+
+        .chat-user-phone {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 3px;
         }
 
         .chat-last-message {
@@ -2589,7 +2613,7 @@
                             <div class="payment-stat-item" style="border-left-color: var(--danger);"><div class="payment-stat-value" id="rejected-payments">0</div><div class="payment-stat-label">Rechazados</div></div>
                         </div>
                         <div class="payment-history-table">
-                            <div class="table-header"><div>Fecha</div><div>Conductor</div><div>Monto</div><div>Tipo</div><div>Estado</div><div>Acciones</div></div>
+                            <div class="table-header"><div>Fecha</div><div>Conductor</div><div>Teléfono</div><div>Monto</div><div>Tipo</div><div>Estado</div></div>
                             <div id="payment-history-list"><div class="loading"><div class="spinner"></div><div>Cargando...</div></div></div>
                         </div>
                         <div class="pagination">
@@ -2744,6 +2768,17 @@
         let creditsListeners = [];
         let blacklistListeners = [];
 
+        // ========== FUNCIÓN PARA OBTENER TELÉFONO CORRECTAMENTE ==========
+        function getUserPhone(userData) {
+            // Intentar obtener teléfono de diferentes campos posibles
+            if (userData.phoneNumber) return userData.phoneNumber;
+            if (userData.phone) return userData.phone;
+            if (userData.phoneNumberValue) return userData.phoneNumberValue;
+            if (userData.mobile) return userData.mobile;
+            if (userData.telefono) return userData.telefono;
+            return 'N/A';
+        }
+
         // ========== UTILIDADES ==========
         function showToast(title, message, type = 'info', duration = 5000) {
             const container = document.getElementById('toast-container');
@@ -2818,13 +2853,11 @@
 
                 try {
                     const cred = await auth.signInWithEmailAndPassword(email, password);
-                    // Verificar si es admin
                     const adminCheck = await checkIfUserIsAdmin(cred.user.uid);
                     if (adminCheck.isAdmin) {
                         currentUserRole = adminCheck.role;
                         adminData = adminCheck.data;
                         showToast('✅ Bienvenido', `Has iniciado como ${adminCheck.role}`, 'success');
-                        // El auth state change manejará la UI
                     } else {
                         await auth.signOut();
                         error.textContent = '⛔ Acceso Denegado: No eres administrador';
@@ -2861,10 +2894,8 @@
                 loading.style.display = 'block';
 
                 try {
-                    // Crear usuario en Auth
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     
-                    // Guardar en Firestore
                     await db.collection('users').doc(cred.user.uid).set({
                         displayName: name,
                         email: email,
@@ -2878,16 +2909,12 @@
                     success.style.display = 'block';
                     success.textContent = '✅ ¡Registro exitoso! Ahora puedes iniciar sesión.';
                     
-                    // Limpiar campos
                     document.getElementById('register-name').value = '';
                     document.getElementById('register-email').value = '';
                     document.getElementById('register-phone').value = '';
                     document.getElementById('register-password').value = '';
 
-                    // Cambiar a login
                     document.querySelector('[data-tab="login"]').click();
-
-                    // Cerrar sesión del usuario registrado
                     await auth.signOut();
 
                 } catch (err) {
@@ -2903,14 +2930,12 @@
         // ========== VERIFICAR ADMIN ==========
         async function checkIfUserIsAdmin(userId) {
             try {
-                // Verificar en colección admins
                 const adminDoc = await db.collection('admins').doc(userId).get();
                 if (adminDoc.exists) {
                     const data = adminDoc.data();
                     return { isAdmin: true, role: data.role || 'admin', data: data };
                 }
                 
-                // Fallback: verificar en users
                 const userDoc = await db.collection('users').doc(userId).get();
                 if (userDoc.exists && userDoc.data().isAdmin === true) {
                     return { isAdmin: true, role: userDoc.data().role || 'admin', data: userDoc.data() };
@@ -3120,21 +3145,32 @@
             
             db.collection('driverApplications').where('status', '==', 'pending')
                 .orderBy('appliedAt', 'desc').get()
-                .then(qs => {
+                .then(async (qs) => {
                     if (qs.empty) {
                         list.innerHTML = `<div class="no-applications"><i class="fas fa-user-clock"></i><div>No hay solicitudes pendientes</div></div>`;
                         return;
                     }
                     list.innerHTML = '';
-                    qs.forEach(doc => {
+                    for (const doc of qs.docs) {
                         const app = doc.data();
                         app.id = doc.id;
-                        list.appendChild(createDriverCard(app));
-                    });
+                        // Obtener datos del usuario para el teléfono
+                        let phone = 'N/A';
+                        if (app.userId) {
+                            try {
+                                const userDoc = await db.collection('users').doc(app.userId).get();
+                                if (userDoc.exists) {
+                                    phone = getUserPhone(userDoc.data());
+                                }
+                            } catch (e) {}
+                        }
+                        if (app.phone) phone = app.phone;
+                        list.appendChild(createDriverCard(app, phone));
+                    }
                 });
         }
 
-        function createDriverCard(app) {
+        function createDriverCard(app, phone) {
             const el = document.createElement('div');
             el.className = 'driver-application';
             const initials = getInitials(app.fullName);
@@ -3144,7 +3180,7 @@
                     <div class="driver-app-avatar">${initials}</div>
                     <div class="driver-app-details">
                         <div class="driver-app-name">${app.fullName || 'Sin nombre'}</div>
-                        <div class="driver-app-phone">📱 ${app.phone || 'N/A'}</div>
+                        <div class="driver-app-phone">📱 ${phone || 'N/A'}</div>
                         <div class="driver-app-email">📧 ${app.email || 'N/A'}</div>
                         <div class="driver-app-vehicle">🚗 ${app.vehicleBrand || ''} ${app.vehicleYear || ''} - ${app.vehiclePlate || ''}</div>
                         <small>${formatDate(app.appliedAt)}</small>
@@ -3163,8 +3199,19 @@
             const doc = await db.collection('driverApplications').doc(id).get();
             if (!doc.exists) return;
             const app = doc.data();
-            const body = document.getElementById('modal-body');
             
+            // Obtener teléfono del usuario
+            let phone = app.phone || 'N/A';
+            if (app.userId) {
+                try {
+                    const userDoc = await db.collection('users').doc(app.userId).get();
+                    if (userDoc.exists) {
+                        phone = getUserPhone(userDoc.data());
+                    }
+                } catch (e) {}
+            }
+            
+            const body = document.getElementById('modal-body');
             body.innerHTML = `
                 <div class="info-grid">
                     <div class="info-section">
@@ -3172,7 +3219,7 @@
                         <div class="info-item"><span class="info-label">Nombre</span><span class="info-value">${app.fullName || 'N/A'}</span></div>
                         <div class="info-item"><span class="info-label">Cédula</span><span class="info-value">${app.idNumber || 'N/A'}</span></div>
                         <div class="info-item"><span class="info-label">Email</span><span class="info-value">${app.email || 'N/A'}</span></div>
-                        <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value">${app.phone || 'N/A'}</span></div>
+                        <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value">${phone}</span></div>
                     </div>
                     <div class="info-section">
                         <div class="info-section-title"><i class="fas fa-car"></i> Vehículo</div>
@@ -3254,9 +3301,11 @@
                         const el = document.createElement('div');
                         el.className = 'verified-driver-card';
                         const status = driver.isOnline ? 'online' : 'offline';
+                        const phone = getUserPhone(driver);
                         el.innerHTML = `
                             <div class="verified-driver-avatar">${getInitials(driver.displayName)}</div>
                             <div class="verified-driver-name">${driver.displayName || 'Usuario'}</div>
+                            <div class="verified-driver-phone">📱 ${phone}</div>
                             <div class="verified-driver-email">${driver.email || 'N/A'}</div>
                             <div class="verified-driver-vehicle">${driver.vehicleBrand || ''} ${driver.vehicleYear || ''}</div>
                             <div class="verified-driver-plate">Placa: ${driver.vehiclePlate || 'N/A'}</div>
@@ -3289,7 +3338,6 @@
 
         // ========== EARNINGS ==========
         function loadEarnings() {
-            // Ganancias hoy
             db.collection('users').where('isDriverVerified', '==', true).get()
                 .then(qs => {
                     let total = 0;
@@ -3297,7 +3345,6 @@
                     document.getElementById('total-earnings-today').textContent = formatCurrency(total);
                 });
 
-            // Pagos pendientes
             db.collection('payments').where('status', '==', 'pending_approval').get()
                 .then(qs => {
                     let total = 0;
@@ -3306,7 +3353,6 @@
                     document.getElementById('total-receipts-pending').textContent = qs.size;
                 });
 
-            // Comisiones
             db.collection('users').where('isDriverVerified', '==', true).get()
                 .then(qs => {
                     let total = 0;
@@ -3314,7 +3360,6 @@
                     document.getElementById('total-comissions').textContent = formatCurrency(Math.round(total));
                 });
 
-            // Comprobantes pendientes
             loadPendingReceipts();
         }
 
@@ -3333,34 +3378,35 @@
                     qs.forEach(doc => {
                         const payment = doc.data();
                         payment.id = doc.id;
-                        list.appendChild(createReceiptCard(payment));
+                        db.collection('users').doc(payment.driverId).get().then(driverDoc => {
+                            const driverData = driverDoc.exists ? driverDoc.data() : {};
+                            const phone = getUserPhone(driverData);
+                            list.appendChild(createReceiptCard(payment, driverData.displayName || 'Conductor', phone));
+                        });
                     });
                 });
         }
 
-        function createReceiptCard(payment) {
+        function createReceiptCard(payment, name, phone) {
             const el = document.createElement('div');
             el.className = 'receipt-item';
-            
-            db.collection('users').doc(payment.driverId).get().then(doc => {
-                const name = doc.exists ? doc.data().displayName || 'Conductor' : 'Conductor';
-                const initials = getInitials(name);
-                el.innerHTML = `
-                    <div class="receipt-info">
-                        <div class="receipt-avatar">${initials}</div>
-                        <div class="receipt-details">
-                            <div class="receipt-driver-name">${name}</div>
-                            <div class="receipt-amount">💰 ${formatCurrency(payment.amount)}</div>
-                            <div class="receipt-date">📅 ${formatDate(payment.receiptSubmittedAt)}</div>
-                        </div>
+            const initials = getInitials(name);
+            el.innerHTML = `
+                <div class="receipt-info">
+                    <div class="receipt-avatar">${initials}</div>
+                    <div class="receipt-details">
+                        <div class="receipt-driver-name">${name}</div>
+                        <div class="receipt-driver-phone">📱 ${phone}</div>
+                        <div class="receipt-amount">💰 ${formatCurrency(payment.amount)}</div>
+                        <div class="receipt-date">📅 ${formatDate(payment.receiptSubmittedAt)}</div>
                     </div>
-                    <div class="receipt-actions">
-                        <button class="btn-view-receipt" onclick="viewReceipt('${payment.id}')"><i class="fas fa-eye"></i> Ver</button>
-                        <button class="btn-approve-receipt" onclick="approveReceipt('${payment.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
-                        <button class="btn-reject-receipt" onclick="rejectReceipt('${payment.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
-                    </div>
-                `;
-            });
+                </div>
+                <div class="receipt-actions">
+                    <button class="btn-view-receipt" onclick="viewReceipt('${payment.id}')"><i class="fas fa-eye"></i> Ver</button>
+                    <button class="btn-approve-receipt" onclick="approveReceipt('${payment.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
+                    <button class="btn-reject-receipt" onclick="rejectReceipt('${payment.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
+                </div>
+            `;
             return el;
         }
 
@@ -3370,6 +3416,7 @@
             const payment = doc.data();
             const driver = await db.collection('users').doc(payment.driverId).get();
             const name = driver.exists ? driver.data().displayName || 'Conductor' : 'Conductor';
+            const phone = driver.exists ? getUserPhone(driver.data()) : 'N/A';
             
             const body = document.getElementById('receipt-modal-body');
             body.innerHTML = `
@@ -3379,9 +3426,9 @@
                 </div>
                 <div class="receipt-details-grid">
                     <div class="receipt-detail-item"><span class="receipt-detail-label">Conductor</span><span class="receipt-detail-value">${name}</span></div>
+                    <div class="receipt-detail-item"><span class="receipt-detail-label">Teléfono</span><span class="receipt-detail-value">${phone}</span></div>
                     <div class="receipt-detail-item"><span class="receipt-detail-label">Monto</span><span class="receipt-detail-value">${formatCurrency(payment.amount)}</span></div>
                     <div class="receipt-detail-item"><span class="receipt-detail-label">Fecha</span><span class="receipt-detail-value">${formatDate(payment.receiptSubmittedAt)}</span></div>
-                    <div class="receipt-detail-item"><span class="receipt-detail-label">Estado</span><span class="receipt-detail-value"><span style="color:var(--warning);font-weight:bold;">⏳ Pendiente</span></span></div>
                 </div>
                 <div class="receipt-actions-modal">
                     <button class="btn-approve-receipt" onclick="approveReceipt('${payment.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
@@ -3451,35 +3498,36 @@
                     qs.forEach(doc => {
                         const req = doc.data();
                         req.id = doc.id;
-                        list.appendChild(createCreditCard(req));
+                        db.collection('users').doc(req.driverId).get().then(driverDoc => {
+                            const driverData = driverDoc.exists ? driverDoc.data() : {};
+                            const phone = getUserPhone(driverData);
+                            list.appendChild(createCreditCard(req, driverData.displayName || 'Conductor', phone));
+                        });
                     });
                 });
         }
 
-        function createCreditCard(req) {
+        function createCreditCard(req, name, phone) {
             const el = document.createElement('div');
             el.className = 'credits-request-item';
-            
-            db.collection('users').doc(req.driverId).get().then(doc => {
-                const name = doc.exists ? doc.data().displayName || 'Conductor' : 'Conductor';
-                const initials = getInitials(name);
-                el.innerHTML = `
-                    <div class="credits-request-info">
-                        <div class="credits-request-avatar">${initials}</div>
-                        <div class="credits-request-details">
-                            <div class="credits-request-driver-name">${name}</div>
-                            <div class="credits-request-amount">💰 ${formatCurrency(req.amount)}</div>
-                            <div class="credits-request-account">🏦 ${req.accountType || ''}: ${req.accountNumber || ''}</div>
-                            <div class="credits-request-date">📅 ${formatDate(req.requestedAt)}</div>
-                        </div>
+            const initials = getInitials(name);
+            el.innerHTML = `
+                <div class="credits-request-info">
+                    <div class="credits-request-avatar">${initials}</div>
+                    <div class="credits-request-details">
+                        <div class="credits-request-driver-name">${name}</div>
+                        <div class="credits-request-driver-phone">📱 ${phone}</div>
+                        <div class="credits-request-amount">💰 ${formatCurrency(req.amount)}</div>
+                        <div class="credits-request-account">🏦 ${req.accountType || ''}: ${req.accountNumber || ''}</div>
+                        <div class="credits-request-date">📅 ${formatDate(req.requestedAt)}</div>
                     </div>
-                    <div class="credits-request-actions">
-                        <button class="btn-view-credits-details" onclick="viewCreditDetails('${req.id}')"><i class="fas fa-eye"></i> Ver</button>
-                        <button class="btn-approve-credits" onclick="approveCredit('${req.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
-                        <button class="btn-reject-credits" onclick="rejectCredit('${req.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
-                    </div>
-                `;
-            });
+                </div>
+                <div class="credits-request-actions">
+                    <button class="btn-view-credits-details" onclick="viewCreditDetails('${req.id}')"><i class="fas fa-eye"></i> Ver</button>
+                    <button class="btn-approve-credits" onclick="approveCredit('${req.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
+                    <button class="btn-reject-credits" onclick="rejectCredit('${req.id}','${name}')"><i class="fas fa-times"></i> Rechazar</button>
+                </div>
+            `;
             return el;
         }
 
@@ -3489,16 +3537,17 @@
             const req = doc.data();
             const driver = await db.collection('users').doc(req.driverId).get();
             const name = driver.exists ? driver.data().displayName || 'Conductor' : 'Conductor';
+            const phone = driver.exists ? getUserPhone(driver.data()) : 'N/A';
             
             const body = document.getElementById('credits-modal-body');
             body.innerHTML = `
                 <div class="credits-details-grid">
                     <div class="credits-detail-item"><span class="credits-detail-label">Conductor</span><span class="credits-detail-value">${name}</span></div>
+                    <div class="credits-detail-item"><span class="credits-detail-label">Teléfono</span><span class="credits-detail-value">${phone}</span></div>
                     <div class="credits-detail-item"><span class="credits-detail-label">Monto</span><span class="credits-detail-value">${formatCurrency(req.amount)}</span></div>
                     <div class="credits-detail-item"><span class="credits-detail-label">Tipo Cuenta</span><span class="credits-detail-value">${req.accountType || 'N/A'}</span></div>
                     <div class="credits-detail-item"><span class="credits-detail-label">Número</span><span class="credits-detail-value">${req.accountNumber || 'N/A'}</span></div>
                     <div class="credits-detail-item"><span class="credits-detail-label">Fecha</span><span class="credits-detail-value">${formatDate(req.requestedAt)}</span></div>
-                    <div class="credits-detail-item"><span class="credits-detail-label">Estado</span><span class="credits-detail-value"><span style="color:var(--warning);font-weight:bold;">⏳ Pendiente</span></span></div>
                 </div>
                 <div class="credits-actions-modal">
                     <button class="btn-approve-credits" onclick="approveCredit('${req.id}','${name}')"><i class="fas fa-check"></i> Aprobar</button>
@@ -3628,14 +3677,15 @@
             el.className = 'table-row';
             const driver = await db.collection('users').doc(payment.driverId).get();
             const name = driver.exists ? driver.data().displayName || 'Conductor' : 'Conductor';
+            const phone = driver.exists ? getUserPhone(driver.data()) : 'N/A';
             
             el.innerHTML = `
                 <div>${formatDate(payment.paymentDate)}</div>
                 <div>${name}</div>
+                <div>${phone}</div>
                 <div>${formatCurrency(payment.amount)}</div>
                 <div>${payment.type === 'receipt_payment' ? 'Comprobante' : 'Créditos'}</div>
                 <div><span class="payment-status ${payment.status}">${payment.status === 'pending_approval' ? 'Pendiente' : payment.status}</span></div>
-                <div><button class="payment-details-btn" onclick="viewPaymentDetails('${payment.id}','${payment.type}')"><i class="fas fa-eye"></i> Ver</button></div>
             `;
             return el;
         }
@@ -3675,16 +3725,18 @@
             el.className = 'active-chat-item';
             el.dataset.chatId = chat.id;
             const name = chat.userName || 'Usuario';
+            const phone = chat.userPhone || 'N/A';
             
             el.innerHTML = `
                 <div class="chat-user-name">${name}</div>
+                <div class="chat-user-phone">📱 ${phone}</div>
                 <div class="chat-last-message">${chat.lastMessage || 'Sin mensajes'}</div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
                     <small>${formatDateTime(chat.lastMessageAt)}</small>
                     ${chat.unreadCount > 0 ? `<div class="chat-unread-count">${chat.unreadCount}</div>` : ''}
                 </div>
             `;
-            el.addEventListener('click', () => selectChat(chat.id, name, chat.userEmail));
+            el.addEventListener('click', () => selectChat(chat.id, name, phone, chat.userEmail));
             return el;
         }
 
@@ -3705,14 +3757,14 @@
                 });
         }
 
-        function selectChat(id, name, email) {
+        function selectChat(id, name, phone, email) {
             document.querySelectorAll('.active-chat-item').forEach(i => i.classList.remove('active'));
             const selected = document.querySelector(`[data-chat-id="${id}"]`);
             if (selected) selected.classList.add('active');
             
             currentChatId = id;
             document.getElementById('current-chat-name').textContent = name;
-            document.getElementById('current-chat-status').textContent = email || 'Usuario';
+            document.getElementById('current-chat-status').textContent = `📱 ${phone || 'N/A'} | ${email || ''}`;
             document.getElementById('current-chat-avatar').textContent = getInitials(name);
             document.getElementById('chat-input').disabled = false;
             document.getElementById('btn-send-chat').disabled = false;
@@ -3815,7 +3867,6 @@
                     senderName: adminData?.displayName || 'Administrador'
                 });
 
-                // Obtener usuarios según target
                 let query = db.collection('users');
                 if (target === 'passengers') query = query.where('isDriverVerified', '==', false);
                 else if (target === 'drivers') query = query.where('isDriverVerified', '==', true);
@@ -4091,7 +4142,6 @@
             setupNavigation();
             setupEventListeners();
 
-            // Monitor auth state
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     const adminCheck = await checkIfUserIsAdmin(user.uid);
