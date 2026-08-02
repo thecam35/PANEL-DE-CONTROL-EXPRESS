@@ -3470,7 +3470,7 @@
             document.getElementById('details-modal').classList.add('active');
         }
 
-        // ========== FUNCIÓN APPROVE DRIVER CORREGIDA ==========
+        // 🔥 ========== FUNCIÓN APPROVE DRIVER CON WHATSAPP ==========
         async function approveDriver(id, name, userId) {
             if (!confirm(`¿Aprobar a ${name}?`)) return;
             try {
@@ -3485,12 +3485,14 @@
                 console.log('📝 userId de la solicitud:', app.userId);
                 console.log('📝 userId recibido:', userId);
                 
+                // 1. Actualizar la solicitud en Firebase
                 await db.collection('driverApplications').doc(id).update({
                     status: 'approved',
                     approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     approvedBy: auth.currentUser.uid
                 });
                 
+                // 2. Obtener el teléfono del usuario
                 let userPhone = app.phone || '';
                 if (userPhone === 'No proporcionado' || !userPhone || userPhone === '') {
                     try {
@@ -3504,6 +3506,7 @@
                     }
                 }
                 
+                // 3. Actualizar el usuario como conductor verificado
                 const userUpdateData = {
                     isDriverVerified: true,
                     verificationStatus: 'approved',
@@ -3527,8 +3530,44 @@
                 
                 await db.collection('users').doc(userId).set(userUpdateData, { merge: true });
                 
+                // 4. ✅ ABRIR WHATSAPP CON EL MENSAJE PREDETERMINADO
+                if (userPhone && userPhone !== 'N/A' && userPhone !== 'No proporcionado' && userPhone.trim() !== '') {
+                    const phoneNumber = userPhone.replace(/\s/g, '').replace(/[^0-9+]/g, '');
+                    
+                    // Asegurar que tenga el código de país (+57 para Colombia)
+                    let finalPhone = phoneNumber;
+                    if (!finalPhone.startsWith('+')) {
+                        if (finalPhone.startsWith('57')) {
+                            finalPhone = '+' + finalPhone;
+                        } else if (finalPhone.startsWith('0')) {
+                            finalPhone = '+57' + finalPhone.substring(1);
+                        } else {
+                            // Si no tiene código, asumimos que es Colombia (+57)
+                            finalPhone = '+57' + finalPhone;
+                        }
+                    }
+                    
+                    const message = encodeURIComponent(
+                        '¡Felicidades! 🎉\n' +
+                        'tu solicitud para ser conductor de Express ha sido aprobada. ¡Bienvenido a la familia! Ya puedes activar el modo conductor en la app y empezar a ganar. Mucho éxito y gracias por confiar en nosotros. ¡Te esperamos en la carretera!\n\n' +
+                        'Importante: Para asegurarte de tener la mejor experiencia, te recomendamos verificar si hay una nueva actualización de la app. La última versión (1.9) incluye correcciones importantes. Puedes actualizar desde el siguiente enlace:\n' +
+                        'https://play.google.com/store/apps/details?id=com.express.pasajero'
+                    );
+                    
+                    const whatsappUrl = `https://wa.me/${finalPhone}?text=${message}`;
+                    console.log('📱 Abriendo WhatsApp:', whatsappUrl);
+                    
+                    // Abrir WhatsApp en una nueva pestaña/ventana
+                    window.open(whatsappUrl, '_blank');
+                    
+                    showToast('📱 WhatsApp', `Mensaje enviado a ${name}`, 'success');
+                } else {
+                    showToast('⚠️ Advertencia', `No se pudo enviar WhatsApp porque no hay número válido para ${name}`, 'warning');
+                }
+                
                 showToast('✅ Aprobado', `${name} es ahora conductor`, 'success');
                 
+                // 5. Recargar listas
                 loadPendingDrivers();
                 loadVerifiedDrivers();
                 updateCounters();
