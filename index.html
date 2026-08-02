@@ -2283,6 +2283,84 @@
             color: var(--gray);
         }
 
+        /* ========== EXPORT SECTION ========== */
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .export-card {
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s;
+        }
+
+        .export-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .export-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .export-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .export-description {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .export-count {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .export-count strong {
+            color: var(--primary);
+        }
+
+        .btn-export {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-export:hover {
+            opacity: 0.85;
+            transform: translateY(-2px);
+        }
+
+        .btn-export:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-export i {
+            font-size: 16px;
+        }
+
         @media (max-width: 768px) {
             .admin-sidebar {
                 width: 70px;
@@ -2514,6 +2592,12 @@
                 <div class="sidebar-item" data-section="admins">
                     <div class="sidebar-icon"><i class="fas fa-user-shield"></i></div>
                     <div class="sidebar-text">Gestionar Admins</div>
+                </div>
+
+                <!-- NUEVA SECCIÓN: EXPORTAR -->
+                <div class="sidebar-item" data-section="export">
+                    <div class="sidebar-icon"><i class="fas fa-download"></i></div>
+                    <div class="sidebar-text">Descargas</div>
                 </div>
             </div>
             
@@ -2815,6 +2899,51 @@
                         
                         <div id="admins-list">
                             <div class="loading"><div class="spinner"></div><div>Cargando administradores...</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== NUEVA SECCIÓN: EXPORTAR ========== -->
+                <div class="content-section" id="export-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-download"></i> Exportar Números de Teléfono</div>
+                        <p style="color:var(--gray);margin-bottom:20px;">
+                            Descarga los números de teléfono de usuarios y conductores en formato TXT.
+                            Cada número en una línea.
+                        </p>
+                        <div class="export-grid">
+                            <!-- Exportar Pasajeros -->
+                            <div class="export-card">
+                                <div class="export-icon"><i class="fas fa-user"></i></div>
+                                <div class="export-title">Pasajeros</div>
+                                <div class="export-description">Todos los usuarios que NO son conductores verificados</div>
+                                <div class="export-count"><strong id="passenger-count">0</strong> números encontrados</div>
+                                <button class="btn-export" id="btn-export-passengers">
+                                    <i class="fas fa-file-alt"></i> Descargar TXT
+                                </button>
+                            </div>
+
+                            <!-- Exportar Conductores -->
+                            <div class="export-card" style="border-left-color: var(--success);">
+                                <div class="export-icon" style="color:var(--success);"><i class="fas fa-car"></i></div>
+                                <div class="export-title">Conductores Verificados</div>
+                                <div class="export-description">Todos los usuarios que son conductores verificados</div>
+                                <div class="export-count"><strong id="driver-count">0</strong> números encontrados</div>
+                                <button class="btn-export" id="btn-export-drivers" style="background:var(--success);">
+                                    <i class="fas fa-file-alt"></i> Descargar TXT
+                                </button>
+                            </div>
+
+                            <!-- Exportar Ambos -->
+                            <div class="export-card" style="border-left-color: var(--warning);">
+                                <div class="export-icon" style="color:var(--warning);"><i class="fas fa-users"></i></div>
+                                <div class="export-title">Todos los Usuarios</div>
+                                <div class="export-description">Todos los usuarios registrados (pasajeros + conductores)</div>
+                                <div class="export-count"><strong id="all-user-count">0</strong> números encontrados</div>
+                                <button class="btn-export" id="btn-export-all" style="background:var(--warning);color:var(--dark);">
+                                    <i class="fas fa-file-alt"></i> Descargar TXT
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3215,6 +3344,7 @@
                 case 'notifications': loadNotificationStats(); break;
                 case 'blacklist': loadBlacklist(); break;
                 case 'admins': loadAdminsList(); break;
+                case 'export': loadExportSection(); break;
             }
         }
 
@@ -4375,6 +4505,59 @@
                 .catch(error => showToast('❌ Error', error.message, 'error'));
         }
 
+        // ========== EXPORTAR NÚMEROS DE TELÉFONO ==========
+        function loadExportSection() {
+            // Contar pasajeros (no conductores verificados)
+            db.collection('users').where('isDriverVerified', '==', false).get()
+                .then(qs => {
+                    document.getElementById('passenger-count').textContent = qs.size;
+                });
+            
+            // Contar conductores verificados
+            db.collection('users').where('isDriverVerified', '==', true).get()
+                .then(qs => {
+                    document.getElementById('driver-count').textContent = qs.size;
+                });
+            
+            // Contar todos los usuarios
+            db.collection('users').get()
+                .then(qs => {
+                    document.getElementById('all-user-count').textContent = qs.size;
+                });
+        }
+
+        function downloadNumbers(users, filename) {
+            const phones = [];
+            users.forEach(doc => {
+                const data = doc.data();
+                const phone = getUserPhone(data);
+                if (phone && phone !== 'N/A' && phone.trim() !== '') {
+                    phones.push(phone.trim());
+                }
+            });
+            
+            // Eliminar duplicados y ordenar
+            const uniquePhones = [...new Set(phones)].sort();
+            
+            if (uniquePhones.length === 0) {
+                showToast('⚠️ Sin números', 'No se encontraron números de teléfono', 'warning');
+                return;
+            }
+            
+            const content = uniquePhones.join('\n');
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('✅ Descarga completada', `Se exportaron ${uniquePhones.length} números`, 'success');
+        }
+
         // ========== UTILIDADES ADICIONALES ==========
         function openImageModal(src) {
             if (!src) { showToast('❌ Error', 'No hay imagen', 'error'); return; }
@@ -4491,6 +4674,58 @@
                 if (e.key === 'Enter') document.getElementById('btn-add-admin').click();
             });
 
+            // ========== EVENTOS DE EXPORTACIÓN ==========
+            document.getElementById('btn-export-passengers').addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+                
+                db.collection('users').where('isDriverVerified', '==', false).get()
+                    .then(qs => {
+                        downloadNumbers(qs, 'pasajeros_express');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
+                    })
+                    .catch(err => {
+                        showToast('❌ Error', err.message, 'error');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
+                    });
+            });
+
+            document.getElementById('btn-export-drivers').addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+                
+                db.collection('users').where('isDriverVerified', '==', true).get()
+                    .then(qs => {
+                        downloadNumbers(qs, 'conductores_express');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
+                    })
+                    .catch(err => {
+                        showToast('❌ Error', err.message, 'error');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
+                    });
+            });
+
+            document.getElementById('btn-export-all').addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+                
+                db.collection('users').get()
+                    .then(qs => {
+                        downloadNumbers(qs, 'todos_usuarios_express');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
+                    })
+                    .catch(err => {
+                        showToast('❌ Error', err.message, 'error');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
+                    });
+            });
+
             // Modals
             document.querySelectorAll('.modal-close').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -4523,6 +4758,7 @@
             loadNotificationStats();
             loadBlacklist();
             loadAdminsList();
+            loadExportSection();
             updateCounters();
             
             showToast('✅ Panel Listo', 'Bienvenido al panel de administración', 'success');
