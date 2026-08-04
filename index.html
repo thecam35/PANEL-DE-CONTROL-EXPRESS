@@ -519,6 +519,224 @@
             color: var(--gray);
         }
 
+        /* ========== GESTIÓN DE USUARIOS ========== */
+        .user-status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .user-status-badge.passenger {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .user-status-badge.driver {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .user-status-badge.admin {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .btn-delete-user {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-delete-user:hover {
+            opacity: 0.85;
+        }
+        .btn-delete-user:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .user-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .table-row-user {
+            display: grid;
+            grid-template-columns: 60px 1fr 1fr 1fr 1fr 80px;
+            gap: 15px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--input-bg);
+            align-items: center;
+        }
+        .table-row-user:last-child {
+            border-bottom: none;
+        }
+        .table-row-user:hover {
+            background: var(--input-bg);
+        }
+        .user-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-name-cell {
+            font-weight: 500;
+            color: var(--text);
+        }
+        .payment-filters {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .filter-select, .filter-input {
+            padding: 10px;
+            border: 1px solid var(--input-bg);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .btn-apply-filters {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+        .btn-apply-filters:hover {
+            opacity: 0.85;
+        }
+        .btn-reset-filters {
+            background: var(--gray);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+        .btn-reset-filters:hover {
+            opacity: 0.85;
+        }
+        .payment-history-table {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--input-bg);
+            align-items: center;
+        }
+        .table-row:last-child {
+            border-bottom: none;
+        }
+        .table-row:hover {
+            background: var(--input-bg);
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+        }
+        .pagination-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .pagination-btn:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+        .pagination-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        .pagination-info {
+            font-size: 14px;
+            color: var(--gray);
+        }
+        .table-header-users {
+            display: grid;
+            grid-template-columns: 60px 1fr 1fr 1fr 1fr 80px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+
         /* Admin Management */
         .admin-card {
             background: var(--input-bg);
@@ -2055,116 +2273,6 @@
             margin-top: 20px;
         }
 
-        .payment-filters {
-            background: var(--input-bg);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .filter-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .filter-label {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-
-        .filter-select, .filter-input {
-            padding: 10px;
-            border: 1px solid var(--input-bg);
-            border-radius: 8px;
-            background: var(--card-bg);
-            color: var(--text);
-            font-size: 14px;
-        }
-
-        .filter-select:focus, .filter-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .btn-apply-filters {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-apply-filters:hover {
-            opacity: 0.85;
-        }
-
-        .btn-reset-filters {
-            background: var(--gray);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-reset-filters:hover {
-            opacity: 0.85;
-        }
-
-        .payment-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .payment-stat-item {
-            background: var(--input-bg);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            border-left: 4px solid var(--primary);
-        }
-
-        .payment-stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .payment-stat-label {
-            font-size: 14px;
-            color: var(--gray);
-        }
-
         .payment-history-table {
             background: var(--card-bg);
             border-radius: 10px;
@@ -2414,6 +2522,15 @@
             .auth-container {
                 padding: 20px;
             }
+
+            .table-header-users {
+                display: none;
+            }
+            .table-row-user {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -2592,6 +2709,13 @@
                 <div class="sidebar-item" data-section="admins">
                     <div class="sidebar-icon"><i class="fas fa-user-shield"></i></div>
                     <div class="sidebar-text">Gestionar Admins</div>
+                </div>
+
+                <!-- NUEVA SECCIÓN: USUARIOS -->
+                <div class="sidebar-item" data-section="users">
+                    <div class="sidebar-icon"><i class="fas fa-users"></i></div>
+                    <div class="sidebar-text">Gestión Usuarios</div>
+                    <div class="sidebar-badge" id="total-users-badge">0</div>
                 </div>
 
                 <!-- NUEVA SECCIÓN: EXPORTAR -->
@@ -2903,6 +3027,76 @@
                     </div>
                 </div>
 
+                <!-- ========== GESTIÓN DE USUARIOS ========== -->
+                <div class="content-section" id="users-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-users"></i> Gestión de Usuarios</div>
+                        
+                        <!-- Filtros -->
+                        <div class="payment-filters" style="margin-bottom:20px;">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label class="filter-label">Buscar</label>
+                                    <input type="text" class="filter-input" id="user-search-input" placeholder="Nombre, email o teléfono..." style="width:100%;">
+                                </div>
+                                <div class="filter-item">
+                                    <label class="filter-label">Tipo</label>
+                                    <select class="filter-select" id="user-filter-type">
+                                        <option value="all">Todos</option>
+                                        <option value="passenger">Pasajeros</option>
+                                        <option value="driver">Conductores Verificados</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item" style="justify-content:flex-end;">
+                                    <button class="btn-apply-filters" id="btn-filter-users" style="width:100%;">
+                                        <i class="fas fa-filter"></i> Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estadísticas rápidas -->
+                        <div class="stats-grid" style="margin-bottom:20px;">
+                            <div class="stat-item">
+                                <div class="stat-value" id="total-users-count">0</div>
+                                <div class="stat-label">Total Usuarios</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: var(--success);">
+                                <div class="stat-value" id="total-passengers-count">0</div>
+                                <div class="stat-label">Pasajeros</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: var(--warning);">
+                                <div class="stat-value" id="total-drivers-count">0</div>
+                                <div class="stat-label">Conductores</div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de usuarios -->
+                        <div style="overflow-x:auto;">
+                            <div class="payment-history-table">
+                                <div class="table-header-users">
+                                    <div>#</div>
+                                    <div>Nombre</div>
+                                    <div>Email</div>
+                                    <div>Teléfono</div>
+                                    <div>Tipo</div>
+                                    <div>Acciones</div>
+                                </div>
+                                <div id="users-list">
+                                    <div class="loading"><div class="spinner"></div><div>Cargando usuarios...</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paginación -->
+                        <div class="pagination">
+                            <button class="pagination-btn" id="users-prev-page" disabled><i class="fas fa-chevron-left"></i></button>
+                            <div class="pagination-info" id="users-page-info">Página 1</div>
+                            <button class="pagination-btn" id="users-next-page" disabled><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ========== NUEVA SECCIÓN: EXPORTAR ========== -->
                 <div class="content-section" id="export-section">
                     <div class="admin-section">
@@ -2984,6 +3178,12 @@
         let earningsListeners = [];
         let creditsListeners = [];
         let blacklistListeners = [];
+
+        // ========== VARIABLES PARA USUARIOS ==========
+        let allUsers = [];
+        let filteredUsers = [];
+        let currentUserPage = 1;
+        const usersPerPage = 10;
 
         // ========== FUNCIÓN PARA OBTENER TELÉFONO CORRECTAMENTE ==========
         function getUserPhone(userData) {
@@ -3344,6 +3544,7 @@
                 case 'notifications': loadNotificationStats(); break;
                 case 'blacklist': loadBlacklist(); break;
                 case 'admins': loadAdminsList(); break;
+                case 'users': loadUsers(); break;
                 case 'export': loadExportSection(); break;
             }
         }
@@ -3657,7 +3858,7 @@
         async function fixAllDrivers() {
             try {
                 const snapshot = await db.collection('users')
-                    .where('isDriverVerified', '==', true)
+                    .where('isDriverVerified', '==', 'true')
                     .get();
                 
                 let fixed = 0;
@@ -4546,23 +4747,12 @@
 
         // ========== EXPORTAR NÚMEROS DE TELÉFONO ==========
         function loadExportSection() {
-            // Contar pasajeros (no conductores verificados)
             db.collection('users').where('isDriverVerified', '==', false).get()
-                .then(qs => {
-                    document.getElementById('passenger-count').textContent = qs.size;
-                });
-            
-            // Contar conductores verificados
+                .then(qs => document.getElementById('passenger-count').textContent = qs.size);
             db.collection('users').where('isDriverVerified', '==', true).get()
-                .then(qs => {
-                    document.getElementById('driver-count').textContent = qs.size;
-                });
-            
-            // Contar todos los usuarios
+                .then(qs => document.getElementById('driver-count').textContent = qs.size);
             db.collection('users').get()
-                .then(qs => {
-                    document.getElementById('all-user-count').textContent = qs.size;
-                });
+                .then(qs => document.getElementById('all-user-count').textContent = qs.size);
         }
 
         function downloadNumbers(users, filename) {
@@ -4575,7 +4765,6 @@
                 }
             });
             
-            // Eliminar duplicados y ordenar
             const uniquePhones = [...new Set(phones)].sort();
             
             if (uniquePhones.length === 0) {
@@ -4595,6 +4784,223 @@
             URL.revokeObjectURL(url);
             
             showToast('✅ Descarga completada', `Se exportaron ${uniquePhones.length} números`, 'success');
+        }
+
+        // ========== GESTIÓN DE USUARIOS ==========
+        function loadUsers() {
+            const list = document.getElementById('users-list');
+            showLoading(list);
+
+            const search = document.getElementById('user-search-input').value.toLowerCase().trim();
+            const type = document.getElementById('user-filter-type').value;
+
+            db.collection('users').orderBy('createdAt', 'desc').get()
+                .then(qs => {
+                    allUsers = [];
+                    qs.forEach(doc => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        allUsers.push(data);
+                    });
+
+                    filteredUsers = allUsers.filter(user => {
+                        if (type === 'passenger' && user.isDriverVerified === true) return false;
+                        if (type === 'driver' && user.isDriverVerified !== true) return false;
+
+                        if (search) {
+                            const name = (user.displayName || user.fullName || '').toLowerCase();
+                            const email = (user.email || '').toLowerCase();
+                            const phone = (user.phone || user.phoneNumber || user.telefono || '').toLowerCase();
+                            const idNumber = (user.idNumber || user.cedula || '').toLowerCase();
+                            const plate = (user.vehiclePlate || '').toLowerCase();
+                            
+                            return name.includes(search) || 
+                                   email.includes(search) || 
+                                   phone.includes(search) || 
+                                   idNumber.includes(search) || 
+                                   plate.includes(search);
+                        }
+                        return true;
+                    });
+
+                    document.getElementById('total-users-count').textContent = allUsers.length;
+                    document.getElementById('total-passengers-count').textContent = allUsers.filter(u => u.isDriverVerified !== true).length;
+                    document.getElementById('total-drivers-count').textContent = allUsers.filter(u => u.isDriverVerified === true).length;
+
+                    if (filteredUsers.length === 0) {
+                        list.innerHTML = `
+                            <div class="no-applications">
+                                <i class="fas fa-users"></i>
+                                <div>No se encontraron usuarios</div>
+                                <div style="font-size:14px;color:var(--gray);margin-top:10px;">Intenta con otros filtros</div>
+                            </div>
+                        `;
+                        updateUserPagination();
+                        return;
+                    }
+
+                    displayUserPage(1);
+                })
+                .catch(error => {
+                    list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
+                });
+        }
+
+        function displayUserPage(page) {
+            currentUserPage = page;
+            const start = (page - 1) * usersPerPage;
+            const end = start + usersPerPage;
+            const pageUsers = filteredUsers.slice(start, end);
+            const list = document.getElementById('users-list');
+
+            if (pageUsers.length === 0) {
+                list.innerHTML = `<div class="no-applications"><i class="fas fa-users"></i><div>No hay usuarios en esta página</div></div>`;
+                updateUserPagination();
+                return;
+            }
+
+            list.innerHTML = '';
+            pageUsers.forEach((user, index) => {
+                const row = createUserRow(user, start + index + 1);
+                list.appendChild(row);
+            });
+            updateUserPagination();
+        }
+
+        function createUserRow(user, index) {
+            const el = document.createElement('div');
+            el.className = 'table-row-user';
+            
+            const name = user.displayName || user.fullName || 'Usuario sin nombre';
+            const email = user.email || 'N/A';
+            const phone = getUserPhone(user);
+            const isDriver = user.isDriverVerified === true;
+            const isAdmin = user.isAdmin === true;
+            
+            let typeLabel = '👤 Pasajero';
+            let typeClass = 'passenger';
+            if (isDriver) {
+                typeLabel = '🚗 Conductor';
+                typeClass = 'driver';
+            }
+            if (isAdmin) {
+                typeLabel = '🛡️ Admin';
+                typeClass = 'admin';
+            }
+
+            const initials = getInitials(name);
+
+            el.innerHTML = `
+                <div style="text-align:center;font-weight:600;color:var(--gray);">${index}</div>
+                <div class="user-info-cell">
+                    <div class="user-avatar-small">${initials}</div>
+                    <div>
+                        <div class="user-name-cell">${name}</div>
+                        ${user.vehiclePlate ? `<small style="color:var(--primary);font-weight:600;">🔢 ${user.vehiclePlate}</small>` : ''}
+                    </div>
+                </div>
+                <div style="font-size:14px;color:var(--text);word-break:break-all;">${email}</div>
+                <div style="font-size:14px;color:var(--text);">${phone}</div>
+                <div><span class="user-status-badge ${typeClass}">${typeLabel}</span></div>
+                <div>
+                    <button class="btn-delete-user" onclick="deleteUser('${user.id}','${name.replace(/'/g, "\\'")}')" title="Eliminar usuario">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            return el;
+        }
+
+        function updateUserPagination() {
+            const total = Math.ceil(filteredUsers.length / usersPerPage);
+            document.getElementById('users-page-info').textContent = `Página ${currentUserPage} de ${total || 1}`;
+            document.getElementById('users-prev-page').disabled = currentUserPage <= 1;
+            document.getElementById('users-next-page').disabled = currentUserPage >= total;
+        }
+
+        // ========== ELIMINAR USUARIO ==========
+        function deleteUser(userId, userName) {
+            if (!userId) {
+                showToast('❌ Error', 'ID de usuario no válido', 'error');
+                return;
+            }
+
+            if (userId === auth.currentUser.uid) {
+                showToast('⛔ Acción Denegada', 'No puedes eliminar tu propia cuenta', 'error');
+                return;
+            }
+
+            if (!confirm(`⚠️ ¿Estás seguro de eliminar al usuario "${userName}"?\n\nEsta acción eliminará TODOS los datos asociados:\n- Perfil de usuario\n- Solicitudes de conductor\n- Historial de chats\n- Pagos y comprobantes\n- Notificaciones\n\n¡Esta acción NO se puede deshacer!`)) {
+                return;
+            }
+
+            const btn = event?.target?.closest?.('.btn-delete-user');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
+            async function deleteCollection(collectionRef, batchSize = 20) {
+                const snapshot = await collectionRef.limit(batchSize).get();
+                if (snapshot.empty) return;
+                
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                await deleteCollection(collectionRef, batchSize);
+            }
+
+            async function deleteUserData() {
+                try {
+                    await db.collection('users').doc(userId).delete();
+
+                    const appsSnapshot = await db.collection('driverApplications').where('userId', '==', userId).get();
+                    const batch1 = db.batch();
+                    appsSnapshot.docs.forEach(doc => batch1.delete(doc.ref));
+                    if (!appsSnapshot.empty) await batch1.commit();
+
+                    const chatsSnapshot = await db.collection('chats').where('userId', '==', userId).get();
+                    for (const chatDoc of chatsSnapshot.docs) {
+                        const messagesRef = db.collection('chats').doc(chatDoc.id).collection('messages');
+                        await deleteCollection(messagesRef);
+                        await db.collection('chats').doc(chatDoc.id).delete();
+                    }
+
+                    const paymentsSnapshot = await db.collection('payments').where('driverId', '==', userId).get();
+                    const batch2 = db.batch();
+                    paymentsSnapshot.docs.forEach(doc => batch2.delete(doc.ref));
+                    if (!paymentsSnapshot.empty) await batch2.commit();
+
+                    const creditsSnapshot = await db.collection('paymentRequests').where('driverId', '==', userId).get();
+                    const batch3 = db.batch();
+                    creditsSnapshot.docs.forEach(doc => batch3.delete(doc.ref));
+                    if (!creditsSnapshot.empty) await batch3.commit();
+
+                    const notifsSnapshot = await db.collection('userNotifications').where('userId', '==', userId).get();
+                    const batch4 = db.batch();
+                    notifsSnapshot.docs.forEach(doc => batch4.delete(doc.ref));
+                    if (!notifsSnapshot.empty) await batch4.commit();
+
+                    const blacklistSnapshot = await db.collection('blacklist').where('userId', '==', userId).get();
+                    const batch5 = db.batch();
+                    blacklistSnapshot.docs.forEach(doc => batch5.delete(doc.ref));
+                    if (!blacklistSnapshot.empty) await batch5.commit();
+
+                    showToast('✅ Usuario Eliminado', `El usuario "${userName}" ha sido eliminado completamente`, 'success');
+                    loadUsers();
+                    updateCounters();
+
+                } catch (error) {
+                    console.error('Error eliminando usuario:', error);
+                    showToast('❌ Error', `Error al eliminar usuario: ${error.message}`, 'error');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-trash"></i>';
+                    }
+                }
+            }
+
+            deleteUserData();
         }
 
         // ========== UTILIDADES ADICIONALES ==========
@@ -4635,6 +5041,14 @@
                 .then(qs => document.getElementById('pending-receipts').textContent = qs.size);
             document.getElementById('unread-chats-count').textContent = unreadChatsCount;
             document.getElementById('unread-chats').textContent = unreadChatsCount;
+            updateUserBadge();
+        }
+
+        function updateUserBadge() {
+            db.collection('users').get().then(qs => {
+                const badge = document.getElementById('total-users-badge');
+                if (badge) badge.textContent = qs.size;
+            });
         }
 
         // ========== LIMPIEZA ==========
@@ -4717,7 +5131,6 @@
             document.getElementById('btn-export-passengers').addEventListener('click', function() {
                 this.disabled = true;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-                
                 db.collection('users').where('isDriverVerified', '==', false).get()
                     .then(qs => {
                         downloadNumbers(qs, 'pasajeros_express');
@@ -4734,7 +5147,6 @@
             document.getElementById('btn-export-drivers').addEventListener('click', function() {
                 this.disabled = true;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-                
                 db.collection('users').where('isDriverVerified', '==', true).get()
                     .then(qs => {
                         downloadNumbers(qs, 'conductores_express');
@@ -4751,7 +5163,6 @@
             document.getElementById('btn-export-all').addEventListener('click', function() {
                 this.disabled = true;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-                
                 db.collection('users').get()
                     .then(qs => {
                         downloadNumbers(qs, 'todos_usuarios_express');
@@ -4763,6 +5174,19 @@
                         this.disabled = false;
                         this.innerHTML = '<i class="fas fa-file-alt"></i> Descargar TXT';
                     });
+            });
+
+            // ========== EVENTOS DE USUARIOS ==========
+            document.getElementById('btn-filter-users').addEventListener('click', loadUsers);
+            document.getElementById('user-search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') loadUsers();
+            });
+            document.getElementById('users-prev-page').addEventListener('click', () => {
+                if (currentUserPage > 1) displayUserPage(currentUserPage - 1);
+            });
+            document.getElementById('users-next-page').addEventListener('click', () => {
+                const total = Math.ceil(filteredUsers.length / usersPerPage);
+                if (currentUserPage < total) displayUserPage(currentUserPage + 1);
             });
 
             // Modals
@@ -4797,6 +5221,7 @@
             loadNotificationStats();
             loadBlacklist();
             loadAdminsList();
+            loadUsers();
             loadExportSection();
             updateCounters();
             
