@@ -3671,7 +3671,9 @@
             document.getElementById('details-modal').classList.add('active');
         }
 
-        // 🔥 ========== FUNCIÓN APPROVE DRIVER CON WHATSAPP ==========
+        // ================================================================
+        // 🔥 FUNCIÓN APPROVE DRIVER CON WHATSAPP Y NOTIFICACIÓN PUSH
+        // ================================================================
         async function approveDriver(id, name, userId) {
             if (!confirm(`¿Aprobar a ${name}?`)) return;
             try {
@@ -3731,44 +3733,31 @@
                 
                 await db.collection('users').doc(userId).set(userUpdateData, { merge: true });
                 
-                // 4. ✅ ABRIR WHATSAPP CON EL MENSAJE PREDETERMINADO
+                // 4. ✅ ENVIAR NOTIFICACIÓN PUSH REAL
+                await sendDriverApprovedNotification(userId, name || app.fullName);
+                
+                // 5. ✅ ABRIR WHATSAPP
                 if (userPhone && userPhone !== 'N/A' && userPhone !== 'No proporcionado' && userPhone.trim() !== '') {
                     const phoneNumber = userPhone.replace(/\s/g, '').replace(/[^0-9+]/g, '');
-                    
-                    // Asegurar que tenga el código de país (+57 para Colombia)
                     let finalPhone = phoneNumber;
                     if (!finalPhone.startsWith('+')) {
-                        if (finalPhone.startsWith('57')) {
-                            finalPhone = '+' + finalPhone;
-                        } else if (finalPhone.startsWith('0')) {
-                            finalPhone = '+57' + finalPhone.substring(1);
-                        } else {
-                            // Si no tiene código, asumimos que es Colombia (+57)
-                            finalPhone = '+57' + finalPhone;
-                        }
+                        if (finalPhone.startsWith('57')) finalPhone = '+' + finalPhone;
+                        else if (finalPhone.startsWith('0')) finalPhone = '+57' + finalPhone.substring(1);
+                        else finalPhone = '+57' + finalPhone;
                     }
-                    
                     const message = encodeURIComponent(
                         '¡Felicidades! 🎉\n' +
                         'tu solicitud para ser conductor de Express ha sido aprobada. ¡Bienvenido a la familia! Ya puedes activar el modo conductor en la app y empezar a ganar. Mucho éxito y gracias por confiar en nosotros. ¡Te esperamos en la carretera!\n\n' +
                         'Importante: Para asegurarte de tener la mejor experiencia, te recomendamos verificar si hay una nueva actualización de la app. La última versión (1.9) incluye correcciones importantes. Puedes actualizar desde el siguiente enlace:\n' +
                         'https://play.google.com/store/apps/details?id=com.express.pasajero'
                     );
-                    
-                    const whatsappUrl = `https://wa.me/${finalPhone}?text=${message}`;
-                    console.log('📱 Abriendo WhatsApp:', whatsappUrl);
-                    
-                    // Abrir WhatsApp en una nueva pestaña/ventana
-                    window.open(whatsappUrl, '_blank');
-                    
+                    window.open(`https://wa.me/${finalPhone}?text=${message}`, '_blank');
                     showToast('📱 WhatsApp', `Mensaje enviado a ${name}`, 'success');
                 } else {
                     showToast('⚠️ Advertencia', `No se pudo enviar WhatsApp porque no hay número válido para ${name}`, 'warning');
                 }
                 
                 showToast('✅ Aprobado', `${name} es ahora conductor`, 'success');
-                
-                // 5. Recargar listas
                 loadPendingDrivers();
                 loadVerifiedDrivers();
                 updateCounters();
@@ -3778,6 +3767,193 @@
                 showToast('❌ Error', error.message, 'error');
             }
         }
+
+        // ================================================================
+        // 📱 ENVIAR NOTIFICACIÓN PUSH REAL CON CUENTA DE SERVICIO
+        // ================================================================
+
+        // 🔥 TU CUENTA DE SERVICIO (COPIA DEL JSON)
+        const SERVICE_ACCOUNT = {
+    type: "service_account",
+    project_id: "express-94bd0",
+    private_key_id: "4008f5362bc6c0cee93483ed04eef82db615abde",
+    private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDeH8XQ3S0mN89J\nuY0Fawl+987fKHV3R537jBDnFoybaxfHDVOyVkZzN9QAJuw80/QkLcj9RLDnTS3/\nQ5AHCBfdaqPaWS2ZVLyQvQHjWasM3XJQzok+laEA/JjtGjaLdfBbMFxeg7X0fW6y\nmDd9TnRNQ11Dy1Az2bSYdycI4xCkiwti1BPlG/no8A0SsCuR4HP7TwBTZ0PzNxcw\nGymd6+ZWMxy9sOTVlubMmUlUsT9Azy1KRati7+2DEGNli8JpNLbdQuHg8by5xWoN\nXElNj9YNFCn6tTKcLLRrDANQORDhuVgjMFDC0Ik3vqgj/tLvMk0rc4PCh44d80zS\nk5hoXF61AgMBAAECggEAQhz94Yl7f0UcRyrZzROLW4XBxs1BjVO9M5qAi2+8QSQy\nixYt48ZnKLMkwDjVltNVdxFDohK4ftgLiU9gRp+Dju1HQN3LQzij+YawUa2mSml9\nNY0L75tUtTj6AZSMSJ09gb7Wt3EHjvJoqPLCjWL1HewfjeathAlYBgttDGmdUgPc\nw8wMnolBau07rFgobphe34BVRYQVZN7S33poEz1iQ94vAU6ObuIAzWpVv20Yvxgg\nuGmikp6oi9hfbCo5zh1uAjXAV4qoNHQ1cOuZum4qmrMonTFOtmu6d/nH4akifXxX\n8wAWX9g9o8dDjhH4SXyTFeQIlxqwgDYTR3xrbGFHrwKBgQD2WNUYOB2pAftANDqR\nTu7u4ovVXhBOWSf/lETYvD9OBhFxllcBR1129heGw8lkfwhHUrJ/emce83FRw7un\nORKn3Ihz36K3gGCSJ7FHxTjAuxlnjzEgiePreeu6Yc5R2u7Sj810zBbr8yhyyKX7\ni/bDDS+ftKGdhqYwrLvtLRyb2wKBgQDm0/RcR3ZprXVx/6HQKhAw0uARyELf4ei4\ntNPtPKfbcdWNURqR36bp1o68wwpu/PQ19NBwuES7PHM9Ay06C1L9Ozlr+UAq5Qqo\nYx4+kIY144aivAS85Q90dgwsq3+UC13voaa7E4shQrYYTzUI7JGXbsxLKppYXMmh\nBOzfIdu8rwKBgHbwaOJqpZdmB4L2NJjXvXDFHLKF2eWaEj/JvHvQV9g6Ac4Pwi4x\n4KSBKNa+TMwisUKOYPQ/iu5cp4fMsxuH6MP3LEKV5SAn8Xhfha6bQE19iESB1Dxb\nlxmoIfI5Kr5GsCwllhMgPqjpG8xfqBQNfbSq9yVqtuUxj6fMnmdi8n8lAoGAd7oO\nsGKcx9mh5lxqyPdYaIqokHCoR0n9FPkuR4pDoq5bzy33MxynjfitFrmvyrvHy8jM\n6PqbI+cJ+uaP6eB/zjuO4DNrlhQxQAARavA5vO/kILqXVocVShoE3JKj3N08fxQA\n0F4ltz3MB7Xl01gpeDuPGZnibtzJ9IwCdQYx3J8CgYBeXS63t7UfXom6+yNSMEEc\nQV/jytZkdFz4znbC0Ka2hTfYp6GTxOkfrhZ9n142fjta03S0VNs2P7+plYlOoNFp\nsp2KPDHbCQs5LSmxNjDiIhRGP3ERkBsmqOLhPtvJcrgdgJDzm2Ct9j5UrWN4FZ8d\no0WfYT3gUzKXRT6I+x3kyg==\n-----END PRIVATE KEY-----\n",
+    client_email: "firebase-adminsdk-fbsvc@express-94bd0.iam.gserviceaccount.com",
+    client_id: "112997877576777800045",
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40express-94bd0.iam.gserviceaccount.com"
+};
+
+// 🔑 OBTENER ACCESS TOKEN CON CUENTA DE SERVICIO (CORREGIDO)
+async function getAccessToken() {
+    try {
+        const now = Math.floor(Date.now() / 1000);
+        const payload = {
+            iss: SERVICE_ACCOUNT.client_email,
+            aud: 'https://oauth2.googleapis.com/token',
+            exp: now + 3600,
+            iat: now,
+            scope: 'https://www.googleapis.com/auth/firebase.messaging'
+        };
+
+        const header = { alg: 'RS256', typ: 'JWT' };
+        const encodedHeader = btoa(JSON.stringify(header));
+        const encodedPayload = btoa(JSON.stringify(payload));
+        const signatureInput = `${encodedHeader}.${encodedPayload}`;
+
+        // 🔥 CORRECCIÓN: Limpiar la clave privada correctamente
+        let privateKey = SERVICE_ACCOUNT.private_key;
+        let pemContents = privateKey
+            .replace(/-----BEGIN PRIVATE KEY-----/, '')
+            .replace(/-----END PRIVATE KEY-----/, '')
+            .replace(/\n/g, '')
+            .trim();
+        
+        const binaryDerString = atob(pemContents);
+        const binaryDer = new Uint8Array(binaryDerString.length);
+        for (let i = 0; i < binaryDerString.length; i++) {
+            binaryDer[i] = binaryDerString.charCodeAt(i);
+        }
+
+        const key = await crypto.subtle.importKey(
+            'pkcs8',
+            binaryDer.buffer,
+            { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+            false,
+            ['sign']
+        );
+
+        const signature = await crypto.subtle.sign(
+            'RSASSA-PKCS1-v1_5',
+            key,
+            new TextEncoder().encode(signatureInput)
+        );
+
+        const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
+        const jwt = `${signatureInput}.${encodedSignature}`;
+
+        const response = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                assertion: jwt
+            })
+        });
+
+        const data = await response.json();
+        console.log('🔑 Token obtenido:', data.access_token ? '✅' : '❌');
+        
+        if (data.error) {
+            console.error('❌ Error de OAuth:', data.error, data.error_description);
+            return null;
+        }
+        
+        return data.access_token || null;
+
+    } catch (error) {
+        console.error('❌ Error obteniendo token:', error);
+        return null;
+    }
+}
+
+// 📱 ENVIAR NOTIFICACIÓN PUSH
+async function sendDriverApprovedNotification(userId, driverName) {
+    try {
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (!userDoc.exists) {
+            console.log('❌ Usuario no encontrado');
+            return false;
+        }
+
+        const userData = userDoc.data();
+        const fcmToken = userData?.fcmToken;
+        const name = driverName || userData?.displayName || 'Conductor';
+
+        console.log(`📱 Enviando notificación a ${name}`);
+        console.log(`📱 Token FCM: ${fcmToken ? fcmToken.substring(0, 30) + '...' : '❌ NO HAY TOKEN'}`);
+
+        // 1. SIEMPRE guardar notificación interna
+        await db.collection('userNotifications').add({
+            userId: userId,
+            title: '✅ ¡Verificación Aprobada!',
+            message: `Felicidades ${name}, ya eres conductor verificado de Express. 🚗`,
+            type: 'success',
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('✅ Notificación interna guardada');
+
+        if (!fcmToken) {
+            console.log('⚠️ No hay token FCM');
+            return true;
+        }
+
+        // 2. Obtener access token
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+            console.log('⚠️ No se pudo obtener access token');
+            return true;
+        }
+
+        // 3. Enviar con API V1
+        const projectId = 'express-94bd0';
+        const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+        const payload = {
+            message: {
+                token: fcmToken,
+                notification: {
+                    title: '✅ ¡Verificación Aprobada!',
+                    body: `Felicidades ${name}, ya eres conductor verificado de Express. 🚗`
+                },
+                data: {
+                    type: 'verification_approved',
+                    driverId: userId,
+                    driverName: name
+                },
+                android: {
+                    priority: 'high',
+                    notification: {
+                        channel_id: 'express_channel',
+                        sound: 'default'
+                    }
+                }
+            }
+        };
+
+        console.log('📤 Enviando a FCM V1...');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log('📱 Respuesta FCM:', result);
+
+        if (response.ok) {
+            console.log('✅ PUSH ENVIADO CORRECTAMENTE');
+            showToast('📱 Push enviado', `Notificación real a ${name}`, 'success');
+        } else {
+            console.error('❌ Error FCM:', result);
+            showToast('⚠️ Error push', result.error?.message || 'No se pudo enviar', 'warning');
+        }
+
+        return true;
+
+    } catch (error) {
+        console.error('❌ Error:', error);
+        return false;
+    }
+}
+
+
 
         async function rejectDriver(id, name) {
             if (!confirm(`¿Rechazar a ${name}?`)) return;
