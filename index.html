@@ -2698,6 +2698,33 @@
             font-size: 16px;
         }
 
+        .payment-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-stat-item {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .payment-stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .payment-stat-label {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
         @media (max-width: 768px) {
             .admin-sidebar {
                 width: 70px;
@@ -4241,6 +4268,100 @@
             }
         }
 
+        // ================================================================
+        // 📱 ENVIAR NOTIFICACIÓN PUSH POR APROBACIÓN DE COMPROBANTE
+        // ================================================================
+        async function sendReceiptApprovedNotification(userId, driverName) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    console.log('❌ Usuario no encontrado');
+                    return false;
+                }
+
+                const userData = userDoc.data();
+                const fcmToken = userData?.fcmToken;
+                const name = driverName || userData?.displayName || 'Conductor';
+
+                console.log(`📱 Enviando notificación de comprobante a ${name}`);
+                console.log(`📱 Token FCM: ${fcmToken ? fcmToken.substring(0, 30) + '...' : '❌ NO HAY TOKEN'}`);
+
+                // Guardar notificación interna
+                await db.collection('userNotifications').add({
+                    userId: userId,
+                    title: '✅ ¡Pago Aprobado!',
+                    message: `Gracias por hacer el pago, ya estás de vuelta. Puedes seguir generando ingresos desde Express. 🚗💰`,
+                    type: 'success',
+                    read: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('✅ Notificación interna guardada');
+
+                if (!fcmToken) {
+                    console.log('⚠️ No hay token FCM');
+                    return true;
+                }
+
+                const accessToken = await getAccessToken();
+                if (!accessToken) {
+                    console.log('⚠️ No se pudo obtener access token');
+                    return true;
+                }
+
+                const projectId = 'express-94bd0';
+                const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+                const payload = {
+                    message: {
+                        token: fcmToken,
+                        notification: {
+                            title: '✅ ¡Pago Aprobado!',
+                            body: `Gracias por hacer el pago, ya estás de vuelta. Puedes seguir generando ingresos desde Express. 🚗💰`
+                        },
+                        data: {
+                            type: 'payment_approved',
+                            driverId: userId,
+                            driverName: name
+                        },
+                        android: {
+                            priority: 'high',
+                            notification: {
+                                channel_id: 'express_channel',
+                                sound: 'default'
+                            }
+                        }
+                    }
+                };
+
+                console.log('📤 Enviando a FCM V1...');
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                console.log('📱 Respuesta FCM:', result);
+
+                if (response.ok) {
+                    console.log('✅ PUSH ENVIADO CORRECTAMENTE');
+                    showToast('📱 Push enviado', `Notificación de pago aprobado a ${name}`, 'success');
+                } else {
+                    console.error('❌ Error FCM:', result);
+                    showToast('⚠️ Error push', result.error?.message || 'No se pudo enviar', 'warning');
+                }
+
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                return false;
+            }
+        }
+
         async function rejectDriver(id, name) {
             if (!confirm(`¿Rechazar a ${name}?`)) return;
             try {
@@ -4667,15 +4788,21 @@
             try {
                 const doc = await db.collection('payments').doc(id).get();
                 const payment = doc.data();
+                
                 await db.collection('payments').doc(id).update({
                     status: 'approved',
                     approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     approvedBy: auth.currentUser.uid
                 });
+                
                 await db.collection('users').doc(payment.driverId).update({
                     todayEarnings: 0,
                     paymentPendingApproval: false
                 });
+
+                // 🔥 ENVIAR NOTIFICACIÓN PUSH REAL POR COMPROBANTE APROBADO
+                await sendReceiptApprovedNotification(payment.driverId, name);
+
                 showToast('✅ Aprobado', `Comprobante de ${name} aprobado`, 'success');
                 loadEarnings();
                 loadPaymentHistory();
@@ -5264,7 +5391,6 @@
                     return false;
                 }
 
-                // Guardar en adminNotifications
                 await db.collection('pushNotifications').add({
                     title: title.trim(),
                     message: message.trim(),
@@ -5276,7 +5402,6 @@
                     senderName: adminData?.displayName || 'Administrador'
                 });
 
-                // Enviar a cada usuario con FCM token
                 let successCount = 0;
                 const batch = db.batch();
                 let notificationCount = 0;
@@ -5286,7 +5411,6 @@
                     const userId = doc.id;
                     const fcmToken = userData?.fcmToken;
 
-                    // Guardar notificación interna
                     const notifRef = db.collection('userNotifications').doc();
                     batch.set(notifRef, {
                         userId: userId,
@@ -5300,7 +5424,6 @@
                     });
                     notificationCount++;
 
-                    // Enviar push real si tiene token
                     if (fcmToken) {
                         try {
                             const accessToken = await getAccessToken();
@@ -5350,7 +5473,6 @@
                     }
                 }
 
-                // Commit todas las notificaciones internas
                 await batch.commit();
 
                 showToast('✅ Notificaciones Enviadas', 
