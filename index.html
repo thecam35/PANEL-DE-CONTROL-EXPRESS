@@ -519,165 +519,116 @@
             color: var(--gray);
         }
 
-        /* ========== PUSH NOTIFICATIONS ========== */
-        .push-form {
-            background: var(--input-bg);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .push-form-group {
-            margin-bottom: 15px;
-        }
-
-        .push-form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--text);
-            font-size: 14px;
-        }
-
-        .push-form-group input,
-        .push-form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: var(--card-bg);
-            color: var(--text);
-            font-size: 14px;
-            transition: border-color 0.3s;
-            font-family: inherit;
-        }
-
-        .push-form-group input:focus,
-        .push-form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .push-form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .push-audience {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .push-audience-btn {
-            flex: 1;
-            padding: 10px 15px;
-            background: var(--card-bg);
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-            color: var(--text);
-            min-width: 100px;
-        }
-
-        .push-audience-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .push-audience-btn:hover:not(.active) {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .push-audience-btn i {
-            margin-right: 5px;
-        }
-
-        .btn-send-push {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s;
-            font-size: 16px;
-        }
-
-        .btn-send-push:hover:not(:disabled) {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-        .btn-send-push:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .push-preview {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
-            border-left: 4px solid var(--primary);
-            display: none;
-        }
-
-        .push-preview.show {
-            display: block;
-        }
-
-        .push-preview-title {
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--text);
-        }
-
-        .push-preview-body {
-            font-size: 14px;
-            color: var(--gray);
-            margin-top: 5px;
-        }
-
-        .push-stats {
+        /* ========== CREDITOS DE BIENVENIDA STYLES ========== */
+        .welcome-credits-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin-top: 20px;
         }
 
-        .push-stat {
+        .welcome-credit-card {
             background: var(--input-bg);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 15px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #ff9800;
+            transition: all 0.3s;
         }
 
-        .push-stat-value {
-            font-size: 24px;
+        .welcome-credit-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .welcome-credit-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .welcome-credit-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ff9800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: bold;
-            color: var(--primary);
+            font-size: 18px;
         }
 
-        .push-stat-label {
+        .welcome-credit-details {
+            flex: 1;
+        }
+
+        .welcome-credit-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .welcome-credit-phone {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .welcome-credit-credits {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .welcome-credit-credits span {
+            color: #ff9800;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .welcome-credit-status {
             font-size: 12px;
             color: var(--gray);
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
-        .push-history-table {
+        .btn-give-welcome-credits {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-give-welcome-credits:hover:not(:disabled) {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
+
+        .btn-give-welcome-credits:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-give-welcome-credits.given {
+            background: var(--gray);
+        }
+
+        .btn-give-welcome-credits i {
+            font-size: 14px;
+        }
+
+        .welcome-credits-history-table {
             margin-top: 20px;
             background: var(--card-bg);
             border-radius: 10px;
@@ -685,9 +636,9 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .push-table-header {
+        .welcome-credits-table-header {
             display: grid;
-            grid-template-columns: 180px 1fr 120px 100px 80px;
+            grid-template-columns: 150px 1fr 120px 100px 120px;
             gap: 15px;
             padding: 15px 20px;
             background: var(--secondary);
@@ -695,75 +646,24 @@
             font-weight: 600;
         }
 
-        .push-table-row {
+        .welcome-credits-table-row {
             display: grid;
-            grid-template-columns: 180px 1fr 120px 100px 80px;
+            grid-template-columns: 150px 1fr 120px 100px 120px;
             gap: 15px;
             padding: 12px 20px;
             border-bottom: 1px solid var(--input-bg);
             align-items: center;
         }
 
-        .push-table-row:last-child {
+        .welcome-credits-table-row:last-child {
             border-bottom: none;
         }
 
-        .push-table-row:hover {
+        .welcome-credits-table-row:hover {
             background: var(--input-bg);
         }
 
-        .push-status-badge {
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .push-status-badge.sent {
-            background: var(--success);
-            color: white;
-        }
-
-        .push-status-badge.failed {
-            background: var(--danger);
-            color: white;
-        }
-
-        .push-status-badge.pending {
-            background: var(--warning);
-            color: white;
-        }
-
-        .push-audience-badge {
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-block;
-            text-align: center;
-            background: var(--primary);
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .push-table-header, .push-table-row {
-                grid-template-columns: 1fr;
-                gap: 5px;
-            }
-            
-            .push-table-header {
-                display: none;
-            }
-            
-            .push-table-row {
-                padding: 15px;
-                border-bottom: 2px solid var(--input-bg);
-            }
-        }
-
-        /* ========== REST OF STYLES (existing) ========== */
+        /* ========== REST OF STYLES ========== */
         .user-status-badge {
             padding: 4px 10px;
             border-radius: 12px;
@@ -2725,6 +2625,234 @@
             color: var(--gray);
         }
 
+        /* Push Notifications Styles */
+        .push-form {
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .push-form-group {
+            margin-bottom: 15px;
+        }
+
+        .push-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .push-form-group input,
+        .push-form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .push-form-group input:focus,
+        .push-form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .push-form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .push-audience {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .push-audience-btn {
+            flex: 1;
+            padding: 10px 15px;
+            background: var(--card-bg);
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: var(--text);
+            min-width: 100px;
+        }
+
+        .push-audience-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .push-audience-btn:hover:not(.active) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .push-audience-btn i {
+            margin-right: 5px;
+        }
+
+        .btn-send-push {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .btn-send-push:hover:not(:disabled) {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .btn-send-push:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .push-preview {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 4px solid var(--primary);
+            display: none;
+        }
+
+        .push-preview.show {
+            display: block;
+        }
+
+        .push-preview-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .push-preview-body {
+            font-size: 14px;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .push-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .push-stat {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .push-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .push-stat-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .push-history-table {
+            margin-top: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .push-table-header {
+            display: grid;
+            grid-template-columns: 180px 1fr 120px 100px 80px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .push-table-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 120px 100px 80px;
+            gap: 15px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--input-bg);
+            align-items: center;
+        }
+
+        .push-table-row:last-child {
+            border-bottom: none;
+        }
+
+        .push-table-row:hover {
+            background: var(--input-bg);
+        }
+
+        .push-status-badge {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .push-status-badge.sent {
+            background: var(--success);
+            color: white;
+        }
+
+        .push-status-badge.failed {
+            background: var(--danger);
+            color: white;
+        }
+
+        .push-status-badge.pending {
+            background: var(--warning);
+            color: white;
+        }
+
+        .push-audience-badge {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            background: var(--primary);
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .admin-sidebar {
                 width: 70px;
@@ -2786,6 +2914,34 @@
                 grid-template-columns: 1fr;
                 gap: 8px;
                 padding: 15px;
+            }
+
+            .welcome-credits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-credits-table-header, .welcome-credits-table-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            .welcome-credits-table-header {
+                display: none;
+            }
+            .welcome-credits-table-row {
+                padding: 15px;
+                border-bottom: 2px solid var(--input-bg);
+            }
+
+            .push-table-header, .push-table-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            .push-table-header {
+                display: none;
+            }
+            .push-table-row {
+                padding: 15px;
+                border-bottom: 2px solid var(--input-bg);
             }
         }
     </style>
@@ -2935,10 +3091,18 @@
                     <div class="sidebar-text">Ganancias</div>
                 </div>
                 
+                <!-- ========== CRÉDITOS (Sistema existente) ========== -->
                 <div class="sidebar-item" data-section="credits">
                     <div class="sidebar-icon"><i class="fas fa-coins"></i></div>
                     <div class="sidebar-text">Créditos</div>
-                    <div class="sidebar-badge" id="pending-credits-count">0</div>
+                    <div class="sidebar-badge" id="pending-credits-badge">0</div>
+                </div>
+
+                <!-- ========== NUEVO: CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS) ========== -->
+                <div class="sidebar-item" data-section="welcome-credits">
+                    <div class="sidebar-icon"><i class="fas fa-gift"></i></div>
+                    <div class="sidebar-text">🎁 Bienvenida</div>
+                    <div class="sidebar-badge" id="welcome-credits-badge">0</div>
                 </div>
                 
                 <div class="sidebar-item" data-section="payment-history">
@@ -2957,7 +3121,6 @@
                     <div class="sidebar-text">Notificaciones</div>
                 </div>
 
-                <!-- ========== NUEVA SECCIÓN: MENSAJES PUSH ========== -->
                 <div class="sidebar-item" data-section="push-notifications">
                     <div class="sidebar-icon"><i class="fas fa-broadcast"></i></div>
                     <div class="sidebar-text">Mensajes Push</div>
@@ -3111,12 +3274,85 @@
                     </div>
                 </div>
                 
-                <!-- Credits -->
+                <!-- ========== CRÉDITOS (Sistema existente) ========== -->
                 <div class="content-section" id="credits-section">
                     <div class="admin-section">
                         <div class="section-title"><i class="fas fa-coins"></i> Solicitudes de Créditos</div>
                         <div class="credits-requests-list" id="pending-credits-list">
                             <div class="loading"><div class="spinner"></div><div>Cargando...</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== NUEVO: CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS) ========== -->
+                <div class="content-section" id="welcome-credits-section">
+                    <div class="admin-section">
+                        <div class="section-title"><i class="fas fa-gift"></i> Créditos de Bienvenida</div>
+                        <p style="color:var(--gray);margin-bottom:15px;">
+                            Otorga <strong>$5.900</strong> en créditos de bienvenida a <strong>NUEVOS PASAJEROS</strong>. 
+                            <strong>Cada usuario recibe solo una vez.</strong> Al dar los créditos, 
+                            se enviará una notificación push automática.
+                        </p>
+                        
+                        <!-- Estadísticas -->
+                        <div class="stats-grid">
+                            <div class="stat-item" style="border-left-color: #ff9800;">
+                                <div class="stat-value" id="total-welcome-credits">0</div>
+                                <div class="stat-label">Total Otorgados</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: #4caf50;">
+                                <div class="stat-value" id="welcome-users-received">0</div>
+                                <div class="stat-label">Pasajeros con Bienvenida</div>
+                            </div>
+                            <div class="stat-item" style="border-left-color: #2196f3;">
+                                <div class="stat-value" id="welcome-users-pending">0</div>
+                                <div class="stat-label">Pasajeros Sin Bienvenida</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de pasajeros -->
+                        <div class="section-title" style="margin-top:20px;">
+                            <i class="fas fa-user-plus"></i> Dar Créditos de Bienvenida a Pasajeros
+                            <span style="font-size:12px;color:var(--gray);font-weight:400;margin-left:10px;">
+                                (Solo pasajeros - cada uno recibe solo una vez)
+                            </span>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label class="filter-label">Buscar pasajero</label>
+                                    <input type="text" class="filter-input" id="welcome-user-search" placeholder="Nombre, email o teléfono...">
+                                </div>
+                                <div class="filter-item" style="justify-content:flex-end;">
+                                    <button class="btn-apply-filters" id="btn-filter-welcome-users" style="width:100%;">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="welcome-credits-grid" id="welcome-credits-users-list">
+                            <div class="loading"><div class="spinner"></div><div>Cargando pasajeros...</div></div>
+                        </div>
+                        
+                        <!-- Historial -->
+                        <div class="section-title" style="margin-top:30px;">
+                            <i class="fas fa-history"></i> Historial de Créditos de Bienvenida
+                        </div>
+                        <div class="welcome-credits-history-table">
+                            <div class="welcome-credits-table-header">
+                                <div>Fecha</div>
+                                <div>Pasajero</div>
+                                <div>Monto</div>
+                                <div>Entregado por</div>
+                            </div>
+                            <div id="welcome-credits-history-list">
+                                <div class="loading"><div class="spinner"></div><div>Cargando historial...</div></div>
+                            </div>
+                        </div>
+                        <div class="pagination">
+                            <button class="pagination-btn" id="welcome-credits-prev-page" disabled><i class="fas fa-chevron-left"></i></button>
+                            <div class="pagination-info" id="welcome-credits-page-info">Página 1</div>
+                            <button class="pagination-btn" id="welcome-credits-next-page" disabled><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
@@ -3245,12 +3481,11 @@
                     </div>
                 </div>
 
-                <!-- ========== NUEVA SECCIÓN: MENSAJES PUSH ========== -->
+                <!-- Push Notifications -->
                 <div class="content-section" id="push-notifications-section">
                     <div class="admin-section">
                         <div class="section-title"><i class="fas fa-broadcast"></i> Mensajes Push</div>
                         
-                        <!-- Formulario de envío -->
                         <div class="push-form">
                             <div class="push-form-group">
                                 <label><i class="fas fa-heading"></i> Título</label>
@@ -3276,7 +3511,6 @@
                                 </div>
                             </div>
 
-                            <!-- Vista previa -->
                             <div class="push-preview" id="push-preview">
                                 <div class="push-preview-title" id="push-preview-title">📱 Título de la notificación</div>
                                 <div class="push-preview-body" id="push-preview-body">Vista previa del mensaje...</div>
@@ -3287,7 +3521,6 @@
                             </button>
                         </div>
 
-                        <!-- Estadísticas -->
                         <div class="push-stats">
                             <div class="push-stat">
                                 <div class="push-stat-value" id="push-total-sent">0</div>
@@ -3303,7 +3536,6 @@
                             </div>
                         </div>
 
-                        <!-- Historial -->
                         <div class="section-title" style="margin-top:30px;"><i class="fas fa-history"></i> Historial de Envíos</div>
                         <div class="push-history-table">
                             <div class="push-table-header">
@@ -3501,18 +3733,22 @@
         let currentPaymentPage = 1;
         const paymentsPerPage = 10;
         let paymentHistoryListener = null;
-        let dashboardListeners = [];
-        let driversListeners = [];
-        let earningsListeners = [];
-        let creditsListeners = [];
-        let blacklistListeners = [];
 
         let allUsers = [];
         let filteredUsers = [];
         let currentUserPage = 1;
         const usersPerPage = 10;
 
-        // ========== FUNCIÓN PARA OBTENER TELÉFONO CORRECTAMENTE ==========
+        // ========== CRÉDITOS DE BIENVENIDA VARIABLES ==========
+        let allWelcomeUsers = [];
+        let filteredWelcomeUsers = [];
+        let currentWelcomePage = 1;
+        const welcomePerPage = 10;
+        let welcomeCreditsHistory = [];
+        let currentWelcomeHistoryPage = 1;
+        const welcomeHistoryPerPage = 10;
+
+        // ========== FUNCIÓN PARA OBTENER TELÉFONO ==========
         function getUserPhone(userData) {
             if (userData.phoneNumber) return userData.phoneNumber;
             if (userData.phone) return userData.phone;
@@ -3567,10 +3803,8 @@
 
         // ========== FUNCIÓN PARA PROMPT DE FIX ==========
         function promptFixDriver() {
-            const uid = prompt('Ingresa el userId del conductor (copia el userId de la solicitud en Firebase):');
-            if (uid) {
-                fixDriverData(uid);
-            }
+            const uid = prompt('Ingresa el userId del conductor:');
+            if (uid) fixDriverData(uid);
         }
 
         // ========== SISTEMA DE AUTENTICACIÓN ==========
@@ -3651,7 +3885,9 @@
                         isDriverVerified: false,
                         isOnline: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        uid: cred.user.uid
+                        uid: cred.user.uid,
+                        credits: 0,
+                        welcomeCreditsGiven: false
                     });
 
                     success.style.display = 'block';
@@ -3862,7 +4098,8 @@
                 case 'drivers': loadPendingDrivers(); break;
                 case 'verified-drivers': loadVerifiedDrivers(); break;
                 case 'earnings': loadEarnings(); break;
-                case 'credits': loadCredits(); break;
+                case 'credits': loadCreditsRequests(); break;
+                case 'welcome-credits': loadWelcomeCreditsSystem(); break;
                 case 'payment-history': loadPaymentHistory(); break;
                 case 'chat': loadChats(); break;
                 case 'notifications': loadNotificationStats(); break;
@@ -3997,7 +4234,7 @@
         }
 
         // ================================================================
-        // 🔥 FUNCIÓN APPROVE DRIVER CON WHATSAPP Y NOTIFICACIÓN PUSH
+        // 🔥 APPROVE DRIVER CON WHATSAPP Y NOTIFICACIÓN PUSH
         // ================================================================
         async function approveDriver(id, name, userId) {
             if (!confirm(`¿Aprobar a ${name}?`)) return;
@@ -4008,10 +4245,6 @@
                     return;
                 }
                 const app = doc.data();
-                
-                console.log('📝 Datos de la solicitud:', app);
-                console.log('📝 userId de la solicitud:', app.userId);
-                console.log('📝 userId recibido:', userId);
                 
                 await db.collection('driverApplications').doc(id).update({
                     status: 'approved',
@@ -4027,9 +4260,7 @@
                             const userData = userDoc.data();
                             userPhone = userData.phone || userData.phoneNumber || userData.telefono || 'No proporcionado';
                         }
-                    } catch (e) {
-                        console.error('Error obteniendo teléfono del usuario:', e);
-                    }
+                    } catch (e) {}
                 }
                 
                 const userUpdateData = {
@@ -4040,7 +4271,6 @@
                     email: app.email || '',
                     idNumber: app.idNumber || '',
                     phone: userPhone || app.phone || 'No proporcionado',
-                    
                     vehicleBrand: app.vehicleBrand || '',
                     vehicleModel: app.vehicleModel || app.vehicleBrand || '',
                     vehicleYear: app.vehicleYear || '',
@@ -4050,15 +4280,10 @@
                     profilePhoto: app.profilePhoto || app.photoURL || ''
                 };
                 
-                console.log('🚗 Datos a guardar en usuario:', userUpdateData);
-                console.log('🚗 userId a actualizar:', userId);
-                
                 await db.collection('users').doc(userId).set(userUpdateData, { merge: true });
                 
-                // Enviar notificación push real
                 await sendDriverApprovedNotification(userId, name || app.fullName);
                 
-                // Abrir WhatsApp
                 if (userPhone && userPhone !== 'N/A' && userPhone !== 'No proporcionado' && userPhone.trim() !== '') {
                     const phoneNumber = userPhone.replace(/\s/g, '').replace(/[^0-9+]/g, '');
                     let finalPhone = phoneNumber;
@@ -4069,14 +4294,10 @@
                     }
                     const message = encodeURIComponent(
                         '¡Felicidades! 🎉\n' +
-                        'tu solicitud para ser conductor de Express ha sido aprobada. ¡Bienvenido a la familia! Ya puedes activar el modo conductor en la app y empezar a ganar. Mucho éxito y gracias por confiar en nosotros. ¡Te esperamos en la carretera!\n\n' +
-                        'Importante: Para asegurarte de tener la mejor experiencia, te recomendamos verificar si hay una nueva actualización de la app. La última versión (1.9) incluye correcciones importantes. Puedes actualizar desde el siguiente enlace:\n' +
-                        'https://play.google.com/store/apps/details?id=com.express.pasajero'
+                        'tu solicitud para ser conductor de Express ha sido aprobada. ¡Bienvenido a la familia! Ya puedes activar el modo conductor en la app y empezar a ganar. Mucho éxito y gracias por confiar en nosotros. ¡Te esperamos en la carretera!'
                     );
                     window.open(`https://wa.me/${finalPhone}?text=${message}`, '_blank');
                     showToast('📱 WhatsApp', `Mensaje enviado a ${name}`, 'success');
-                } else {
-                    showToast('⚠️ Advertencia', `No se pudo enviar WhatsApp porque no hay número válido para ${name}`, 'warning');
                 }
                 
                 showToast('✅ Aprobado', `${name} es ahora conductor`, 'success');
@@ -4091,7 +4312,7 @@
         }
 
         // ================================================================
-        // 📱 ENVIAR NOTIFICACIÓN PUSH REAL CON CUENTA DE SERVICIO
+        // 📱 ENVIAR NOTIFICACIÓN PUSH CON CUENTA DE SERVICIO
         // ================================================================
 
         const SERVICE_ACCOUNT = {
@@ -4163,13 +4384,10 @@
                 });
 
                 const data = await response.json();
-                console.log('🔑 Token obtenido:', data.access_token ? '✅' : '❌');
-                
                 if (data.error) {
-                    console.error('❌ Error de OAuth:', data.error, data.error_description);
+                    console.error('❌ Error de OAuth:', data.error);
                     return null;
                 }
-                
                 return data.access_token || null;
 
             } catch (error) {
@@ -4181,17 +4399,11 @@
         async function sendDriverApprovedNotification(userId, driverName) {
             try {
                 const userDoc = await db.collection('users').doc(userId).get();
-                if (!userDoc.exists) {
-                    console.log('❌ Usuario no encontrado');
-                    return false;
-                }
+                if (!userDoc.exists) return false;
 
                 const userData = userDoc.data();
                 const fcmToken = userData?.fcmToken;
                 const name = driverName || userData?.displayName || 'Conductor';
-
-                console.log(`📱 Enviando notificación a ${name}`);
-                console.log(`📱 Token FCM: ${fcmToken ? fcmToken.substring(0, 30) + '...' : '❌ NO HAY TOKEN'}`);
 
                 await db.collection('userNotifications').add({
                     userId: userId,
@@ -4201,18 +4413,11 @@
                     read: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log('✅ Notificación interna guardada');
 
-                if (!fcmToken) {
-                    console.log('⚠️ No hay token FCM');
-                    return true;
-                }
+                if (!fcmToken) return true;
 
                 const accessToken = await getAccessToken();
-                if (!accessToken) {
-                    console.log('⚠️ No se pudo obtener access token');
-                    return true;
-                }
+                if (!accessToken) return true;
 
                 const projectId = 'express-94bd0';
                 const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
@@ -4239,7 +4444,6 @@
                     }
                 };
 
-                console.log('📤 Enviando a FCM V1...');
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -4249,17 +4453,9 @@
                     body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
-                console.log('📱 Respuesta FCM:', result);
-
                 if (response.ok) {
                     console.log('✅ PUSH ENVIADO CORRECTAMENTE');
-                    showToast('📱 Push enviado', `Notificación real a ${name}`, 'success');
-                } else {
-                    console.error('❌ Error FCM:', result);
-                    showToast('⚠️ Error push', result.error?.message || 'No se pudo enviar', 'warning');
                 }
-
                 return true;
 
             } catch (error) {
@@ -4269,36 +4465,29 @@
         }
 
         // ================================================================
-        // 📱 ENVIAR NOTIFICACIÓN PUSH POR APROBACIÓN DE COMPROBANTE
+        // 🎁 ENVIAR NOTIFICACIÓN PUSH POR CRÉDITOS DE BIENVENIDA
         // ================================================================
-        async function sendReceiptApprovedNotification(userId, driverName) {
+        async function sendWelcomeCreditsNotification(userId, userName) {
             try {
                 const userDoc = await db.collection('users').doc(userId).get();
-                if (!userDoc.exists) {
-                    console.log('❌ Usuario no encontrado');
-                    return false;
-                }
+                if (!userDoc.exists) return false;
 
                 const userData = userDoc.data();
                 const fcmToken = userData?.fcmToken;
-                const name = driverName || userData?.displayName || 'Conductor';
-
-                console.log(`📱 Enviando notificación de comprobante a ${name}`);
-                console.log(`📱 Token FCM: ${fcmToken ? fcmToken.substring(0, 30) + '...' : '❌ NO HAY TOKEN'}`);
+                const name = userName || userData?.displayName || 'Usuario';
 
                 // Guardar notificación interna
                 await db.collection('userNotifications').add({
                     userId: userId,
-                    title: '✅ ¡Pago Aprobado!',
-                    message: `Gracias por hacer el pago, ya estás de vuelta. Puedes seguir generando ingresos desde Express. 🚗💰`,
+                    title: '🎁 ¡Créditos de Bienvenida!',
+                    message: `¡${name}, has recibido $5.900 en créditos de bienvenida! Úsalos como quieras en tus viajes. 🚗💰`,
                     type: 'success',
                     read: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log('✅ Notificación interna guardada');
 
                 if (!fcmToken) {
-                    console.log('⚠️ No hay token FCM');
+                    console.log('⚠️ No hay token FCM para', name);
                     return true;
                 }
 
@@ -4315,13 +4504,14 @@
                     message: {
                         token: fcmToken,
                         notification: {
-                            title: '✅ ¡Pago Aprobado!',
-                            body: `Gracias por hacer el pago, ya estás de vuelta. Puedes seguir generando ingresos desde Express. 🚗💰`
+                            title: '🎁 ¡Créditos de Bienvenida!',
+                            body: `¡${name}, has recibido $5.900 en créditos de bienvenida! Úsalos como quieras en tus viajes. 🚗💰`
                         },
                         data: {
-                            type: 'payment_approved',
-                            driverId: userId,
-                            driverName: name
+                            type: 'welcome_credits',
+                            userId: userId,
+                            userName: name,
+                            amount: '5900'
                         },
                         android: {
                             priority: 'high',
@@ -4333,7 +4523,6 @@
                     }
                 };
 
-                console.log('📤 Enviando a FCM V1...');
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -4343,21 +4532,16 @@
                     body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
-                console.log('📱 Respuesta FCM:', result);
-
                 if (response.ok) {
-                    console.log('✅ PUSH ENVIADO CORRECTAMENTE');
-                    showToast('📱 Push enviado', `Notificación de pago aprobado a ${name}`, 'success');
+                    console.log('✅ Notificación de bienvenida enviada a', name);
                 } else {
+                    const result = await response.json();
                     console.error('❌ Error FCM:', result);
-                    showToast('⚠️ Error push', result.error?.message || 'No se pudo enviar', 'warning');
                 }
-
                 return true;
 
             } catch (error) {
-                console.error('❌ Error:', error);
+                console.error('❌ Error enviando notificación de bienvenida:', error);
                 return false;
             }
         }
@@ -4378,7 +4562,7 @@
             }
         }
 
-        // ========== FUNCIONES PARA CORREGIR CONDUCTORES ==========
+        // ========== CORREGIR CONDUCTORES ==========
         async function fixDriverData(userId) {
             try {
                 const appsSnapshot = await db.collection('driverApplications')
@@ -4387,15 +4571,11 @@
                     .get();
                 
                 if (appsSnapshot.empty) {
-                    showToast('❌ Error', 'No se encontró solicitud aprobada para este usuario', 'error');
+                    showToast('❌ Error', 'No se encontró solicitud aprobada', 'error');
                     return;
                 }
                 
-                const appDoc = appsSnapshot.docs[0];
-                const appData = appDoc.data();
-                
-                console.log('📝 Datos de la solicitud encontrados:', appData);
-                
+                const appData = appsSnapshot.docs[0].data();
                 const userDoc = await db.collection('users').doc(userId).get();
                 if (!userDoc.exists) {
                     showToast('❌ Error', 'Usuario no encontrado', 'error');
@@ -4403,14 +4583,12 @@
                 }
                 
                 const userData = userDoc.data();
-                console.log('👤 Datos actuales del usuario:', userData);
                 
-                const updateData = {
+                await db.collection('users').doc(userId).update({
                     displayName: appData.fullName || userData.displayName,
                     email: appData.email || userData.email,
                     idNumber: appData.idNumber || userData.idNumber,
                     phone: appData.phone || userData.phone,
-                    
                     vehicleBrand: appData.vehicleBrand || userData.vehicleBrand || '',
                     vehicleModel: appData.vehicleModel || userData.vehicleModel || appData.vehicleBrand || '',
                     vehicleYear: appData.vehicleYear || userData.vehicleYear || '',
@@ -4418,55 +4596,36 @@
                     vehiclePlate: appData.vehiclePlate ? appData.vehiclePlate.toUpperCase().trim() : userData.vehiclePlate || '',
                     vehiclePhoto: appData.vehiclePhoto || userData.vehiclePhoto || '',
                     profilePhoto: appData.profilePhoto || appData.photoURL || userData.photoURL || '',
-                    
                     isDriverVerified: true,
                     verificationStatus: 'approved',
                     fixedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                });
                 
-                console.log('📦 Datos a actualizar:', updateData);
-                
-                await db.collection('users').doc(userId).update(updateData);
-                
-                showToast('✅ Corregido', `Datos del vehículo actualizados para ${appData.fullName}`, 'success');
-                
+                showToast('✅ Corregido', `Datos actualizados para ${appData.fullName}`, 'success');
                 loadVerifiedDrivers();
                 
             } catch (error) {
-                console.error('❌ Error al corregir:', error);
                 showToast('❌ Error', error.message, 'error');
             }
         }
 
         async function fixAllDrivers() {
             try {
-                const snapshot = await db.collection('users')
-                    .where('isDriverVerified', '==', 'true')
-                    .get();
-                
+                const snapshot = await db.collection('users').where('isDriverVerified', '==', 'true').get();
                 let fixed = 0;
-                let errors = 0;
-                let details = [];
                 
                 for (const doc of snapshot.docs) {
                     const userId = doc.id;
                     const userData = doc.data();
                     
-                    if (userData.vehiclePlate && userData.vehicleBrand) {
-                        console.log(`✅ ${userId} ya tiene datos: ${userData.vehiclePlate} - ${userData.vehicleBrand}`);
-                        continue;
-                    }
+                    if (userData.vehiclePlate && userData.vehicleBrand) continue;
                     
                     const appsSnapshot = await db.collection('driverApplications')
                         .where('userId', '==', userId)
                         .where('status', '==', 'approved')
                         .get();
                     
-                    if (appsSnapshot.empty) {
-                        console.log(`⚠️ ${userId}: No tiene solicitud aprobada`);
-                        errors++;
-                        continue;
-                    }
+                    if (appsSnapshot.empty) continue;
                     
                     const appData = appsSnapshot.docs[0].data();
                     
@@ -4485,16 +4644,12 @@
                     });
                     
                     fixed++;
-                    details.push(`${appData.fullName}: ${appData.vehiclePlate} (${appData.vehicleBrand})`);
-                    console.log(`✅ ${userId}: Corregido - ${appData.vehiclePlate} - ${appData.vehicleBrand}`);
                 }
                 
-                console.log('📋 Resumen:', details.join('\n'));
-                showToast('✅ Completado', `Se corrigieron ${fixed} conductores, ${errors} errores`, 'success');
+                showToast('✅ Completado', `Se corrigieron ${fixed} conductores`, 'success');
                 loadVerifiedDrivers();
                 
             } catch (error) {
-                console.error('❌ Error:', error);
                 showToast('❌ Error', error.message, 'error');
             }
         }
@@ -4530,7 +4685,7 @@
                             <div class="verified-driver-phone">📱 ${phone}</div>
                             <div class="verified-driver-email">📧 ${driver.email || 'N/A'}</div>
                             <div class="verified-driver-vehicle">🚗 ${vehicleInfo}</div>
-                            <div class="verified-driver-plate">🔢 Placa: <strong style="color:${driver.vehiclePlate ? 'var(--primary)' : 'var(--gray)'};">${driver.vehiclePlate || 'NO REGISTRADA'}</strong></div>
+                            <div class="verified-driver-plate">🔢 Placa: <strong>${driver.vehiclePlate || 'NO REGISTRADA'}</strong></div>
                             ${driver.vehicleColor ? `<div style="text-align:center;font-size:13px;color:var(--gray);">🎨 Color: ${driver.vehicleColor}</div>` : ''}
                             <div class="verified-driver-status ${status}"><i class="fas fa-circle"></i> ${driver.isOnline ? 'En línea' : 'Desconectado'}</div>
                             <div class="verified-driver-actions">
@@ -4546,92 +4701,41 @@
                     });
                 })
                 .catch(error => {
-                    console.error('Error cargando conductores:', error);
                     list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
                 });
         }
 
-        // ========== VER DETALLES DE CONDUCTOR VERIFICADO ==========
         async function viewVerifiedDriverDetails(userId) {
             try {
                 const doc = await db.collection('users').doc(userId).get();
-                if (!doc.exists) {
-                    showToast('❌ Error', 'Usuario no encontrado', 'error');
-                    return;
-                }
+                if (!doc.exists) return;
                 const driver = doc.data();
-                
-                console.log('👤 Datos del conductor:', driver);
-                
-                let phone = driver.phone || driver.phoneNumber || driver.telefono || 'N/A';
+                const phone = getUserPhone(driver);
                 
                 const body = document.getElementById('modal-body');
                 body.innerHTML = `
                     <div class="info-grid">
                         <div class="info-section">
                             <div class="info-section-title"><i class="fas fa-user"></i> Información Personal</div>
-                            <div class="info-item">
-                                <span class="info-label">Nombre</span>
-                                <span class="info-value">${driver.displayName || driver.fullName || 'N/A'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Email</span>
-                                <span class="info-value">${driver.email || 'N/A'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Teléfono</span>
-                                <span class="info-value">${phone}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Cédula</span>
-                                <span class="info-value">${driver.idNumber || driver.cedula || 'N/A'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Estado</span>
-                                <span class="info-value">
-                                    <span class="verified-driver-status ${driver.isOnline ? 'online' : 'offline'}" style="display:inline-block;width:auto;">
-                                        ${driver.isOnline ? '🟢 En línea' : '🔴 Desconectado'}
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Viajes Completados</span>
-                                <span class="info-value">${driver.completedRides || 0}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Ganancias Totales</span>
-                                <span class="info-value">${formatCurrency(driver.totalEarnings || 0)}</span>
-                            </div>
+                            <div class="info-item"><span class="info-label">Nombre</span><span class="info-value">${driver.displayName || driver.fullName || 'N/A'}</span></div>
+                            <div class="info-item"><span class="info-label">Email</span><span class="info-value">${driver.email || 'N/A'}</span></div>
+                            <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value">${phone}</span></div>
+                            <div class="info-item"><span class="info-label">Cédula</span><span class="info-value">${driver.idNumber || driver.cedula || 'N/A'}</span></div>
+                            <div class="info-item"><span class="info-label">Estado</span><span class="info-value"><span class="verified-driver-status ${driver.isOnline ? 'online' : 'offline'}" style="display:inline-block;width:auto;">${driver.isOnline ? '🟢 En línea' : '🔴 Desconectado'}</span></span></div>
+                            <div class="info-item"><span class="info-label">Viajes Completados</span><span class="info-value">${driver.completedRides || 0}</span></div>
+                            <div class="info-item"><span class="info-label">Ganancias Totales</span><span class="info-value">${formatCurrency(driver.totalEarnings || 0)}</span></div>
+                            <div class="info-item"><span class="info-label">Créditos</span><span class="info-value" style="color:var(--primary);font-size:20px;">${formatCurrency(driver.credits || 0)}</span></div>
                         </div>
                         <div class="info-section">
                             <div class="info-section-title"><i class="fas fa-car"></i> Información del Vehículo</div>
-                            <div class="info-item">
-                                <span class="info-label">Marca</span>
-                                <span class="info-value" style="font-weight:600;">${driver.vehicleBrand || 'No especificada'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Modelo</span>
-                                <span class="info-value" style="font-weight:600;">${driver.vehicleModel || driver.vehicleBrand || 'No especificado'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Año</span>
-                                <span class="info-value" style="font-weight:600;">${driver.vehicleYear || 'No especificado'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Color</span>
-                                <span class="info-value" style="font-weight:600;">${driver.vehicleColor || 'No especificado'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Placa</span>
-                                <span class="info-value" style="font-size:18px;color:var(--primary);font-weight:700;">
-                                    ${driver.vehiclePlate || 'NO REGISTRADA'}
-                                </span>
-                            </div>
+                            <div class="info-item"><span class="info-label">Marca</span><span class="info-value">${driver.vehicleBrand || 'No especificada'}</span></div>
+                            <div class="info-item"><span class="info-label">Modelo</span><span class="info-value">${driver.vehicleModel || driver.vehicleBrand || 'No especificado'}</span></div>
+                            <div class="info-item"><span class="info-label">Año</span><span class="info-value">${driver.vehicleYear || 'No especificado'}</span></div>
+                            <div class="info-item"><span class="info-label">Color</span><span class="info-value">${driver.vehicleColor || 'No especificado'}</span></div>
+                            <div class="info-item"><span class="info-label">Placa</span><span class="info-value" style="font-size:18px;color:var(--primary);font-weight:700;">${driver.vehiclePlate || 'NO REGISTRADA'}</span></div>
                             <div class="info-item" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--input-bg);">
                                 <span class="info-label">Estado Verificación</span>
-                                <span class="info-value">
-                                    <span class="payment-status approved" style="display:inline-block;">✅ Verificado</span>
-                                </span>
+                                <span class="info-value"><span class="payment-status approved" style="display:inline-block;">✅ Verificado</span></span>
                             </div>
                         </div>
                     </div>
@@ -4639,19 +4743,13 @@
                         <div class="photo-section">
                             <div class="photo-title">Foto de Perfil</div>
                             <div class="photo-container" onclick="openImageModal('${driver.photoURL || driver.profilePhoto}')">
-                                ${(driver.photoURL || driver.profilePhoto) ? 
-                                    `<img src="${driver.photoURL || driver.profilePhoto}">` : 
-                                    `<div class="photo-placeholder"><i class="fas fa-user"></i><div>No disponible</div></div>`
-                                }
+                                ${(driver.photoURL || driver.profilePhoto) ? `<img src="${driver.photoURL || driver.profilePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-user"></i><div>No disponible</div></div>`}
                             </div>
                         </div>
                         <div class="photo-section">
                             <div class="photo-title">Foto del Vehículo</div>
                             <div class="photo-container" onclick="openImageModal('${driver.vehiclePhoto}')">
-                                ${driver.vehiclePhoto ? 
-                                    `<img src="${driver.vehiclePhoto}">` : 
-                                    `<div class="photo-placeholder"><i class="fas fa-car"></i><div>No disponible</div></div>`
-                                }
+                                ${driver.vehiclePhoto ? `<img src="${driver.vehiclePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-car"></i><div>No disponible</div></div>`}
                             </div>
                         </div>
                     </div>
@@ -4659,7 +4757,6 @@
                 document.getElementById('details-modal').classList.add('active');
                 
             } catch (error) {
-                console.error('❌ Error al ver detalles:', error);
                 showToast('❌ Error', error.message, 'error');
             }
         }
@@ -4766,8 +4863,7 @@
             const body = document.getElementById('receipt-modal-body');
             body.innerHTML = `
                 <div class="receipt-image-container">
-                    ${payment.receiptImage ? `<img src="${payment.receiptImage}" class="receipt-image">` : 
-                    `<div class="photo-placeholder"><i class="fas fa-receipt"></i><div>Sin imagen</div></div>`}
+                    ${payment.receiptImage ? `<img src="${payment.receiptImage}" class="receipt-image">` : `<div class="photo-placeholder"><i class="fas fa-receipt"></i><div>Sin imagen</div></div>`}
                 </div>
                 <div class="receipt-details-grid">
                     <div class="receipt-detail-item"><span class="receipt-detail-label">Conductor</span><span class="receipt-detail-value">${name}</span></div>
@@ -4800,9 +4896,6 @@
                     paymentPendingApproval: false
                 });
 
-                // 🔥 ENVIAR NOTIFICACIÓN PUSH REAL POR COMPROBANTE APROBADO
-                await sendReceiptApprovedNotification(payment.driverId, name);
-
                 showToast('✅ Aprobado', `Comprobante de ${name} aprobado`, 'success');
                 loadEarnings();
                 loadPaymentHistory();
@@ -4832,8 +4925,8 @@
             }
         }
 
-        // ========== CREDITS ==========
-        function loadCredits() {
+        // ========== CRÉDITOS (Sistema existente) ==========
+        function loadCreditsRequests() {
             const list = document.getElementById('pending-credits-list');
             showLoading(list);
 
@@ -4917,7 +5010,7 @@
                     approvedBy: auth.currentUser.uid
                 });
                 showToast('✅ Aprobado', `Solicitud de ${name} aprobada`, 'success');
-                loadCredits();
+                loadCreditsRequests();
                 updateCounters();
                 document.getElementById('credits-modal').classList.remove('active');
             } catch (error) {
@@ -4935,12 +5028,311 @@
                     rejectionReason: 'Rechazado por administrador'
                 });
                 showToast('Rechazado', `Solicitud de ${name} rechazada`, 'warning');
-                loadCredits();
+                loadCreditsRequests();
                 updateCounters();
                 document.getElementById('credits-modal').classList.remove('active');
             } catch (error) {
                 showToast('❌ Error', error.message, 'error');
             }
+        }
+
+        // ================================================================
+        // 🎁 CRÉDITOS DE BIENVENIDA - SOLO PASAJEROS
+        // ================================================================
+
+        function loadWelcomeCreditsSystem() {
+            loadWelcomeCreditsStats();
+            loadWelcomeCreditsUsers();
+            loadWelcomeCreditsHistory();
+        }
+
+        async function loadWelcomeCreditsStats() {
+            try {
+                // Total de créditos de bienvenida otorgados
+                const creditsSnapshot = await db.collection('userCredits')
+                    .where('type', '==', 'welcome_credit')
+                    .get();
+                
+                let totalCredits = 0;
+                const usersWithWelcome = new Set();
+                
+                creditsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalCredits += data.amount || 0;
+                    if (data.userId) usersWithWelcome.add(data.userId);
+                });
+
+                document.getElementById('total-welcome-credits').textContent = formatCurrency(totalCredits);
+                document.getElementById('welcome-users-received').textContent = usersWithWelcome.size;
+
+                // SOLO PASAJEROS: usuarios que NO son conductores verificados
+                const allUsers = await db.collection('users').where('isDriverVerified', '==', false).get();
+                let pending = 0;
+                allUsers.forEach(doc => {
+                    const data = doc.data();
+                    if (data.welcomeCreditsGiven !== true) pending++;
+                });
+                document.getElementById('welcome-users-pending').textContent = pending;
+                document.getElementById('welcome-credits-badge').textContent = pending;
+
+            } catch (error) {
+                console.error('Error cargando estadísticas de bienvenida:', error);
+            }
+        }
+
+        function loadWelcomeCreditsUsers() {
+            const list = document.getElementById('welcome-credits-users-list');
+            showLoading(list);
+
+            const search = document.getElementById('welcome-user-search').value.toLowerCase().trim();
+
+            // SOLO PASAJEROS: isDriverVerified == false
+            db.collection('users')
+                .where('isDriverVerified', '==', false)
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then(qs => {
+                    allWelcomeUsers = [];
+                    qs.forEach(doc => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        allWelcomeUsers.push(data);
+                    });
+
+                    filteredWelcomeUsers = allWelcomeUsers.filter(user => {
+                        if (search) {
+                            const name = (user.displayName || user.fullName || '').toLowerCase();
+                            const email = (user.email || '').toLowerCase();
+                            const phone = (user.phone || user.phoneNumber || user.telefono || '').toLowerCase();
+                            return name.includes(search) || email.includes(search) || phone.includes(search);
+                        }
+                        return true;
+                    });
+
+                    if (filteredWelcomeUsers.length === 0) {
+                        list.innerHTML = `
+                            <div class="no-applications" style="grid-column:1/-1;">
+                                <i class="fas fa-users"></i>
+                                <div>No se encontraron pasajeros</div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    displayWelcomeUsersPage(1);
+                })
+                .catch(error => {
+                    list.innerHTML = `<div class="no-applications" style="grid-column:1/-1;"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
+                });
+        }
+
+        function displayWelcomeUsersPage(page) {
+            currentWelcomePage = page;
+            const start = (page - 1) * welcomePerPage;
+            const end = start + welcomePerPage;
+            const pageUsers = filteredWelcomeUsers.slice(start, end);
+            const list = document.getElementById('welcome-credits-users-list');
+
+            if (pageUsers.length === 0) {
+                list.innerHTML = `<div class="no-applications" style="grid-column:1/-1;"><i class="fas fa-users"></i><div>No hay pasajeros en esta página</div></div>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            pageUsers.forEach(user => {
+                const card = createWelcomeUserCard(user);
+                list.appendChild(card);
+            });
+        }
+
+        function createWelcomeUserCard(user) {
+            const el = document.createElement('div');
+            el.className = 'welcome-credit-card';
+            
+            const name = user.displayName || user.fullName || 'Pasajero';
+            const phone = getUserPhone(user);
+            const credits = user.credits || 0;
+            const hasWelcomeCredits = user.welcomeCreditsGiven === true;
+            
+            el.innerHTML = `
+                <div class="welcome-credit-info">
+                    <div class="welcome-credit-avatar">${getInitials(name)}</div>
+                    <div class="welcome-credit-details">
+                        <div class="welcome-credit-name">${name}</div>
+                        <div class="welcome-credit-phone">📱 ${phone}</div>
+                        <div class="welcome-credit-credits">💰 Créditos: <span>${formatCurrency(credits)}</span></div>
+                        <div class="welcome-credit-status">👤 Pasajero ${hasWelcomeCredits ? '✅ Ya tiene bienvenida' : '⏳ Pendiente'}</div>
+                    </div>
+                </div>
+                <button class="btn-give-welcome-credits ${hasWelcomeCredits ? 'given' : ''}" 
+                        onclick="giveWelcomeCredits('${user.id}','${name.replace(/'/g, "\\'")}')"
+                        ${hasWelcomeCredits ? 'disabled' : ''}>
+                    <i class="fas ${hasWelcomeCredits ? 'fa-check' : 'fa-gift'}"></i>
+                    ${hasWelcomeCredits ? 'Ya recibió' : 'Dar $5.900'}
+                </button>
+            `;
+            return el;
+        }
+
+        // ================================================================
+        // 🎁 DAR CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS + NOTIFICACIÓN PUSH)
+        // ================================================================
+        async function giveWelcomeCredits(userId, userName) {
+            const amount = 5900; // $5.900 créditos de bienvenida
+
+            if (!userId || !userName) {
+                showToast('❌ Error', 'Datos de usuario inválidos', 'error');
+                return;
+            }
+
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    showToast('❌ Error', 'Usuario no encontrado', 'error');
+                    return;
+                }
+
+                const userData = userDoc.data();
+
+                // Verificar que sea pasajero (NO conductor verificado)
+                if (userData.isDriverVerified === true) {
+                    showToast('⚠️ Advertencia', 'Este usuario es un conductor verificado. Los créditos de bienvenida son solo para pasajeros.', 'warning');
+                    return;
+                }
+
+                if (userData.welcomeCreditsGiven === true) {
+                    showToast('⚠️ Advertencia', `El pasajero ${userName} ya recibió sus créditos de bienvenida`, 'warning');
+                    return;
+                }
+
+                const existingCredits = await db.collection('userCredits')
+                    .where('userId', '==', userId)
+                    .where('type', '==', 'welcome_credit')
+                    .get();
+
+                if (!existingCredits.empty) {
+                    showToast('⚠️ Advertencia', `El pasajero ${userName} ya tiene créditos de bienvenida registrados`, 'warning');
+                    await db.collection('users').doc(userId).update({ welcomeCreditsGiven: true });
+                    loadWelcomeCreditsSystem();
+                    return;
+                }
+
+                if (!confirm(`¿Dar ${formatCurrency(amount)} créditos de bienvenida a ${userName}?`)) {
+                    return;
+                }
+
+                // Guardar registro de créditos otorgados
+                await db.collection('userCredits').add({
+                    userId: userId,
+                    userName: userName,
+                    userEmail: userData.email || '',
+                    userPhone: getUserPhone(userData),
+                    amount: amount,
+                    type: 'welcome_credit',
+                    givenBy: auth.currentUser.uid,
+                    givenByName: adminData?.displayName || 'Administrador',
+                    givenAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    note: 'Créditos de bienvenida para pasajero'
+                });
+
+                // Actualizar usuario
+                const currentCredits = userData.credits || 0;
+                await db.collection('users').doc(userId).update({
+                    credits: currentCredits + amount,
+                    welcomeCreditsGiven: true,
+                    welcomeCreditsGivenAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 🔥 ENVIAR NOTIFICACIÓN PUSH
+                await sendWelcomeCreditsNotification(userId, userName);
+
+                showToast('🎉 Créditos Otorgados', `${formatCurrency(amount)} créditos entregados a ${userName}`, 'success');
+                
+                loadWelcomeCreditsSystem();
+
+            } catch (error) {
+                console.error('❌ Error al dar créditos:', error);
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        function loadWelcomeCreditsHistory() {
+            const list = document.getElementById('welcome-credits-history-list');
+            showLoading(list);
+
+            db.collection('userCredits')
+                .where('type', '==', 'welcome_credit')
+                .orderBy('givenAt', 'desc')
+                .limit(50)
+                .get()
+                .then(qs => {
+                    welcomeCreditsHistory = [];
+                    qs.forEach(doc => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        welcomeCreditsHistory.push(data);
+                    });
+
+                    if (welcomeCreditsHistory.length === 0) {
+                        list.innerHTML = `
+                            <div class="no-applications" style="grid-column:1/-1;">
+                                <i class="fas fa-gift"></i>
+                                <div>No hay créditos de bienvenida otorgados aún</div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    displayWelcomeHistoryPage(1);
+                })
+                .catch(error => {
+                    list.innerHTML = `<div class="no-applications" style="grid-column:1/-1;"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
+                });
+        }
+
+        function displayWelcomeHistoryPage(page) {
+            currentWelcomeHistoryPage = page;
+            const start = (page - 1) * welcomeHistoryPerPage;
+            const end = start + welcomeHistoryPerPage;
+            const pageHistory = welcomeCreditsHistory.slice(start, end);
+            const list = document.getElementById('welcome-credits-history-list');
+
+            if (pageHistory.length === 0) {
+                list.innerHTML = `<div class="no-applications" style="grid-column:1/-1;"><i class="fas fa-history"></i><div>No hay más registros</div></div>`;
+                updateWelcomeHistoryPagination();
+                return;
+            }
+
+            list.innerHTML = '';
+            pageHistory.forEach(entry => {
+                const row = createWelcomeHistoryRow(entry);
+                list.appendChild(row);
+            });
+            updateWelcomeHistoryPagination();
+        }
+
+        function createWelcomeHistoryRow(entry) {
+            const el = document.createElement('div');
+            el.className = 'welcome-credits-table-row';
+            
+            el.innerHTML = `
+                <div style="font-size:13px;color:var(--text);">${formatDateTime(entry.givenAt)}</div>
+                <div>
+                    <div style="font-weight:600;color:var(--text);">${entry.userName || 'Pasajero'}</div>
+                    <div style="font-size:12px;color:var(--gray);">${entry.userEmail || ''}</div>
+                    <div style="font-size:12px;color:var(--gray);">📱 ${entry.userPhone || 'N/A'}</div>
+                </div>
+                <div style="font-weight:700;color:#ff9800;font-size:18px;">${formatCurrency(entry.amount)}</div>
+                <div style="font-size:13px;color:var(--gray);">${entry.givenByName || 'Administrador'}</div>
+            `;
+            return el;
+        }
+
+        function updateWelcomeHistoryPagination() {
+            const total = Math.ceil(welcomeCreditsHistory.length / welcomeHistoryPerPage);
+            document.getElementById('welcome-credits-page-info').textContent = `Página ${currentWelcomeHistoryPage} de ${total || 1}`;
+            document.getElementById('welcome-credits-prev-page').disabled = currentWelcomeHistoryPage <= 1;
+            document.getElementById('welcome-credits-next-page').disabled = currentWelcomeHistoryPage >= total;
         }
 
         // ========== PAYMENT HISTORY ==========
@@ -5566,7 +5958,7 @@
                 .catch(error => showToast('❌ Error', error.message, 'error'));
         }
 
-        // ========== EXPORTAR NÚMEROS DE TELÉFONO ==========
+        // ========== EXPORTAR NÚMEROS ==========
         function loadExportSection() {
             db.collection('users').where('isDriverVerified', '==', false).get()
                 .then(qs => document.getElementById('passenger-count').textContent = qs.size);
@@ -5718,6 +6110,7 @@
                     <div>
                         <div class="user-name-cell">${name}</div>
                         ${user.vehiclePlate ? `<small style="color:var(--primary);font-weight:600;">🔢 ${user.vehiclePlate}</small>` : ''}
+                        ${user.credits ? `<small style="color:var(--success);font-weight:600;">💰 ${formatCurrency(user.credits)}</small>` : ''}
                     </div>
                 </div>
                 <div style="font-size:14px;color:var(--text);word-break:break-all;">${email}</div>
@@ -5750,7 +6143,7 @@
                 return;
             }
 
-            if (!confirm(`⚠️ ¿Estás seguro de eliminar al usuario "${userName}"?\n\nEsta acción eliminará TODOS los datos asociados:\n- Perfil de usuario\n- Solicitudes de conductor\n- Historial de chats\n- Pagos y comprobantes\n- Notificaciones\n\n¡Esta acción NO se puede deshacer!`)) {
+            if (!confirm(`⚠️ ¿Estás seguro de eliminar al usuario "${userName}"?\n\nEsta acción eliminará TODOS los datos asociados:\n- Perfil de usuario\n- Solicitudes de conductor\n- Historial de chats\n- Pagos y comprobantes\n- Notificaciones\n- Créditos otorgados\n\n¡Esta acción NO se puede deshacer!`)) {
                 return;
             }
 
@@ -5806,8 +6199,14 @@
                     blacklistSnapshot.docs.forEach(doc => batch5.delete(doc.ref));
                     if (!blacklistSnapshot.empty) await batch5.commit();
 
+                    const userCreditsSnapshot = await db.collection('userCredits').where('userId', '==', userId).get();
+                    const batch6 = db.batch();
+                    userCreditsSnapshot.docs.forEach(doc => batch6.delete(doc.ref));
+                    if (!userCreditsSnapshot.empty) await batch6.commit();
+
                     showToast('✅ Usuario Eliminado', `El usuario "${userName}" ha sido eliminado completamente`, 'success');
                     loadUsers();
+                    loadWelcomeCreditsSystem();
                     updateCounters();
 
                 } catch (error) {
@@ -5854,14 +6253,15 @@
                 });
             db.collection('paymentRequests').where('status', '==', 'pending').where('type', '==', 'credits_payment').get()
                 .then(qs => {
-                    document.getElementById('pending-credits-count').textContent = qs.size;
                     document.getElementById('pending-credits').textContent = qs.size;
+                    document.getElementById('pending-credits-badge').textContent = qs.size;
                 });
             db.collection('payments').where('status', '==', 'pending_approval').get()
                 .then(qs => document.getElementById('pending-receipts').textContent = qs.size);
             document.getElementById('unread-chats-count').textContent = unreadChatsCount;
             document.getElementById('unread-chats').textContent = unreadChatsCount;
             updateUserBadge();
+            loadWelcomeCreditsStats();
         }
 
         function updateUserBadge() {
@@ -5873,8 +6273,6 @@
 
         // ========== LIMPIEZA ==========
         function cleanupAllListeners() {
-            [dashboardListeners, driversListeners, earningsListeners, creditsListeners, blacklistListeners]
-                .forEach(list => { list.forEach(l => l()); list.length = 0; });
             if (chatListener) chatListener();
             if (activeChatsListener) activeChatsListener();
             if (paymentHistoryListener) paymentHistoryListener();
@@ -5932,7 +6330,7 @@
                 }
             });
 
-            // Push Notifications
+            // Push
             document.querySelectorAll('.push-audience-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.push-audience-btn').forEach(b => b.classList.remove('active'));
@@ -5971,7 +6369,7 @@
             // Blacklist
             document.getElementById('btn-add-blacklist').addEventListener('click', addToBlacklist);
 
-            // Admin management
+            // Admins
             document.getElementById('btn-add-admin').addEventListener('click', async function() {
                 const email = document.getElementById('new-admin-email').value.trim();
                 const role = document.getElementById('new-admin-role').value;
@@ -6045,6 +6443,19 @@
                 if (currentUserPage < total) displayUserPage(currentUserPage + 1);
             });
 
+            // Welcome Credits
+            document.getElementById('btn-filter-welcome-users').addEventListener('click', loadWelcomeCreditsUsers);
+            document.getElementById('welcome-user-search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') loadWelcomeCreditsUsers();
+            });
+            document.getElementById('welcome-credits-prev-page').addEventListener('click', () => {
+                if (currentWelcomeHistoryPage > 1) displayWelcomeHistoryPage(currentWelcomeHistoryPage - 1);
+            });
+            document.getElementById('welcome-credits-next-page').addEventListener('click', () => {
+                const total = Math.ceil(welcomeCreditsHistory.length / welcomeHistoryPerPage);
+                if (currentWelcomeHistoryPage < total) displayWelcomeHistoryPage(currentWelcomeHistoryPage + 1);
+            });
+
             // Modals
             document.querySelectorAll('.modal-close').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -6071,7 +6482,8 @@
             loadPendingDrivers();
             loadVerifiedDrivers();
             loadEarnings();
-            loadCredits();
+            loadCreditsRequests();
+            loadWelcomeCreditsSystem();
             loadPaymentHistory();
             loadChats();
             loadNotificationStats();
