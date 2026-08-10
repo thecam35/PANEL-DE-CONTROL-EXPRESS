@@ -595,6 +595,14 @@
             margin-top: 3px;
         }
 
+        .welcome-credit-status.passenger {
+            color: #1565c0;
+        }
+
+        .welcome-credit-status.driver {
+            color: #2e7d32;
+        }
+
         .btn-give-welcome-credits {
             background: #ff9800;
             color: white;
@@ -622,6 +630,11 @@
 
         .btn-give-welcome-credits.given {
             background: var(--gray);
+        }
+
+        .btn-give-welcome-credits.driver {
+            background: var(--gray);
+            cursor: not-allowed;
         }
 
         .btn-give-welcome-credits i {
@@ -3292,6 +3305,9 @@
                             Otorga <strong>$5.900</strong> en créditos de bienvenida a <strong>NUEVOS PASAJEROS</strong>. 
                             <strong>Cada usuario recibe solo una vez.</strong> Al dar los créditos, 
                             se enviará una notificación push automática.
+                            <br><br>
+                            <strong style="color:var(--danger);">⚠️ IMPORTANTE:</strong> Solo los pasajeros pueden recibir créditos de bienvenida. 
+                            Los conductores verificados NO aparecen en esta lista.
                         </p>
                         
                         <!-- Estadísticas -->
@@ -4476,7 +4492,6 @@
                 const fcmToken = userData?.fcmToken;
                 const name = userName || userData?.displayName || 'Usuario';
 
-                // Guardar notificación interna
                 await db.collection('userNotifications').add({
                     userId: userId,
                     title: '🎁 ¡Créditos de Bienvenida!',
@@ -5153,6 +5168,11 @@
             const phone = getUserPhone(user);
             const credits = user.credits || 0;
             const hasWelcomeCredits = user.welcomeCreditsGiven === true;
+            const isDriver = user.isDriverVerified === true;
+            
+            // Si es conductor, no debería aparecer, pero por seguridad lo marcamos
+            const userType = isDriver ? '🚗 Conductor' : '👤 Pasajero';
+            const statusClass = isDriver ? 'driver' : 'passenger';
             
             el.innerHTML = `
                 <div class="welcome-credit-info">
@@ -5161,14 +5181,14 @@
                         <div class="welcome-credit-name">${name}</div>
                         <div class="welcome-credit-phone">📱 ${phone}</div>
                         <div class="welcome-credit-credits">💰 Créditos: <span>${formatCurrency(credits)}</span></div>
-                        <div class="welcome-credit-status">👤 Pasajero ${hasWelcomeCredits ? '✅ Ya tiene bienvenida' : '⏳ Pendiente'}</div>
+                        <div class="welcome-credit-status ${statusClass}">${userType} ${hasWelcomeCredits ? '✅ Ya tiene bienvenida' : '⏳ Pendiente'}</div>
                     </div>
                 </div>
-                <button class="btn-give-welcome-credits ${hasWelcomeCredits ? 'given' : ''}" 
-                        onclick="giveWelcomeCredits('${user.id}','${name.replace(/'/g, "\\'")}')"
-                        ${hasWelcomeCredits ? 'disabled' : ''}>
-                    <i class="fas ${hasWelcomeCredits ? 'fa-check' : 'fa-gift'}"></i>
-                    ${hasWelcomeCredits ? 'Ya recibió' : 'Dar $5.900'}
+                <button class="btn-give-welcome-credits ${hasWelcomeCredits ? 'given' : ''} ${isDriver ? 'driver' : ''}" 
+                        onclick="${isDriver ? '' : `giveWelcomeCredits('${user.id}','${name.replace(/'/g, "\\'")}')`}"
+                        ${hasWelcomeCredits || isDriver ? 'disabled' : ''}>
+                    <i class="fas ${hasWelcomeCredits ? 'fa-check' : isDriver ? 'fa-times' : 'fa-gift'}"></i>
+                    ${hasWelcomeCredits ? 'Ya recibió' : isDriver ? 'Conductor' : 'Dar $5.900'}
                 </button>
             `;
             return el;
@@ -5194,9 +5214,9 @@
 
                 const userData = userDoc.data();
 
-                // Verificar que sea pasajero (NO conductor verificado)
+                // 🔥 VERIFICACIÓN CRÍTICA: SOLO PASAJEROS
                 if (userData.isDriverVerified === true) {
-                    showToast('⚠️ Advertencia', 'Este usuario es un conductor verificado. Los créditos de bienvenida son solo para pasajeros.', 'warning');
+                    showToast('⛔ Acción Denegada', '¡Los conductores verificados NO pueden recibir créditos de bienvenida!', 'error');
                     return;
                 }
 
