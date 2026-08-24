@@ -673,7 +673,6 @@
             background: var(--input-bg);
         }
 
-        /* Botón para limpiar créditos de conductores */
         .btn-clean-driver-credits {
             background: var(--danger);
             color: white;
@@ -3356,7 +3355,7 @@
                     </div>
                 </div>
 
-                <!-- ========== WELCOME CREDITS CON BOTÓN DE LIMPIEZA ========== -->
+                <!-- Welcome Credits -->
                 <div class="content-section" id="welcome-credits-section">
                     <div class="admin-section">
                         <div class="section-title"><i class="fas fa-gift"></i> Créditos de Bienvenida</div>
@@ -3369,7 +3368,7 @@
                             <strong style="color:var(--danger);">Si un pasajero se convierte en conductor, los créditos se QUITAN automáticamente.</strong>
                         </p>
 
-                        <!-- 🔥 BOTÓN PARA LIMPIAR CRÉDITOS DE CONDUCTORES -->
+                        <!-- Botón para limpiar créditos de conductores -->
                         <div style="margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
                             <button class="btn-clean-driver-credits" id="btn-clean-driver-credits" onclick="cleanDriverWelcomeCredits()">
                                 <i class="fas fa-broom"></i> Quitar Créditos de Bienvenida a Conductores
@@ -4243,10 +4242,16 @@
                 });
         }
 
+        // ===== FUNCIÓN CORREGIDA CON vehicleType =====
         function createDriverCard(app, phone) {
             const el = document.createElement('div');
             el.className = 'driver-application';
             const initials = getInitials(app.fullName);
+            
+            // 🔥 Tipo de vehículo
+            const vehicleType = app.vehicleType || 'car';
+            const vehicleTypeEmoji = vehicleType === 'moto' ? '🏍️' : '🚗';
+            const vehicleTypeLabel = vehicleType === 'moto' ? 'Moto' : 'Carro';
             
             el.innerHTML = `
                 <div class="driver-app-info">
@@ -4255,7 +4260,10 @@
                         <div class="driver-app-name">${app.fullName || 'Sin nombre'}</div>
                         <div class="driver-app-phone">📱 ${phone || 'N/A'}</div>
                         <div class="driver-app-email">📧 ${app.email || 'N/A'}</div>
-                        <div class="driver-app-vehicle">🚗 ${app.vehicleBrand || ''} ${app.vehicleYear || ''} - ${app.vehiclePlate || ''}</div>
+                        <div class="driver-app-vehicle">${vehicleTypeEmoji} ${app.vehicleBrand || ''} ${app.vehicleYear || ''} - ${app.vehiclePlate || ''}</div>
+                        <div style="font-size:13px;color:var(--gray);">
+                            <strong>Tipo:</strong> ${vehicleTypeLabel}
+                        </div>
                         <small>${formatDate(app.appliedAt)}</small>
                     </div>
                 </div>
@@ -4268,6 +4276,7 @@
             return el;
         }
 
+        // ===== FUNCIÓN CORREGIDA CON vehicleType =====
         async function viewDriverDetails(id) {
             const doc = await db.collection('driverApplications').doc(id).get();
             if (!doc.exists) return;
@@ -4283,6 +4292,10 @@
                 } catch (e) {}
             }
             
+            const vehicleType = app.vehicleType || 'car';
+            const vehicleTypeEmoji = vehicleType === 'moto' ? '🏍️' : '🚗';
+            const vehicleTypeLabel = vehicleType === 'moto' ? 'Moto' : 'Carro';
+            
             const body = document.getElementById('modal-body');
             body.innerHTML = `
                 <div class="info-grid">
@@ -4295,6 +4308,7 @@
                     </div>
                     <div class="info-section">
                         <div class="info-section-title"><i class="fas fa-car"></i> Vehículo</div>
+                        <div class="info-item"><span class="info-label">Tipo</span><span class="info-value">${vehicleTypeEmoji} ${vehicleTypeLabel}</span></div>
                         <div class="info-item"><span class="info-label">Marca</span><span class="info-value">${app.vehicleBrand || 'N/A'}</span></div>
                         <div class="info-item"><span class="info-label">Año</span><span class="info-value">${app.vehicleYear || 'N/A'}</span></div>
                         <div class="info-item"><span class="info-label">Color</span><span class="info-value">${app.vehicleColor || 'N/A'}</span></div>
@@ -4319,248 +4333,7 @@
             document.getElementById('details-modal').classList.add('active');
         }
 
-        // ================================================================
-        // ⭐ FUNCIÓN PARA ELIMINAR CRÉDITOS DE BIENVENIDA A CONDUCTORES
-        // ================================================================
-        async function removeWelcomeCreditsFromDriver(userId) {
-            try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                if (!userDoc.exists) return false;
-
-                const userData = userDoc.data();
-
-                // Verificar si tiene créditos de bienvenida
-                if (userData.welcomeCreditsGiven !== true) {
-                    return false;
-                }
-
-                // Buscar los créditos de bienvenida en userCredits
-                const creditsSnapshot = await db.collection('userCredits')
-                    .where('userId', '==', userId)
-                    .where('type', '==', 'welcome_credit')
-                    .get();
-
-                let totalWelcomeCredits = 0;
-                const creditsToDelete = [];
-
-                creditsSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    totalWelcomeCredits += data.amount || 0;
-                    creditsToDelete.push(doc.id);
-                });
-
-                if (totalWelcomeCredits === 0) {
-                    // Si no hay registros en userCredits pero el flag está en true, lo corregimos
-                    await db.collection('users').doc(userId).update({
-                        welcomeCreditsGiven: false
-                    });
-                    return false;
-                }
-
-                // Restar los créditos de bienvenida del total del usuario
-                const currentCredits = userData.credits || 0;
-                const newCredits = Math.max(0, currentCredits - totalWelcomeCredits);
-
-                // Eliminar los registros de userCredits
-                const batch = db.batch();
-                creditsToDelete.forEach(id => {
-                    batch.delete(db.collection('userCredits').doc(id));
-                });
-
-                // Actualizar el usuario
-                batch.update(db.collection('users').doc(userId), {
-                    credits: newCredits,
-                    welcomeCreditsGiven: false,
-                    welcomeCreditsRemovedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    welcomeCreditsRemovedReason: 'Usuario se convirtió en conductor'
-                });
-
-                await batch.commit();
-
-                // Registrar en historial de auditoría
-                await db.collection('welcomeCreditsAudit').add({
-                    userId: userId,
-                    userName: userData.displayName || userData.fullName || 'Usuario',
-                    userEmail: userData.email || '',
-                    action: 'removed',
-                    amount: totalWelcomeCredits,
-                    reason: 'Usuario se convirtió en conductor',
-                    performedBy: auth.currentUser.uid,
-                    performedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                return true;
-
-            } catch (error) {
-                console.error('❌ Error removiendo créditos de bienvenida:', error);
-                return false;
-            }
-        }
-
-        // ================================================================
-        // 🔥 NUEVO: LIMPIAR CRÉDITOS DE BIENVENIDA DE TODOS LOS CONDUCTORES
-        // ================================================================
-        async function cleanDriverWelcomeCredits() {
-            const btn = document.getElementById('btn-clean-driver-credits');
-            const reportDiv = document.getElementById('cleaning-report');
-            
-            if (!confirm('⚠️ ¿Estás seguro de querer QUITAR los créditos de bienvenida de TODOS los conductores verificados que los tengan?\n\nEsta acción:\n- Buscará todos los conductores con créditos de bienvenida\n- Les restará $5.900 de su saldo\n- Eliminará los registros de créditos de bienvenida\n- Marcará que ya no tienen bienvenida\n\n¡Esta acción NO se puede deshacer fácilmente!')) {
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando conductores...';
-            reportDiv.classList.remove('show');
-            reportDiv.innerHTML = '';
-
-            try {
-                // Buscar todos los conductores verificados
-                const driversSnapshot = await db.collection('users')
-                    .where('isDriverVerified', '==', true)
-                    .get();
-
-                let totalDrivers = driversSnapshot.size;
-                let cleaned = 0;
-                let alreadyClean = 0;
-                let errors = 0;
-                const reportItems = [];
-
-                reportDiv.innerHTML = `<div style="padding:10px;font-weight:600;">🔍 Revisando ${totalDrivers} conductores...</div>`;
-                reportDiv.classList.add('show');
-
-                for (const doc of driversSnapshot.docs) {
-                    const userData = doc.data();
-                    const userName = userData.displayName || userData.fullName || 'Usuario';
-                    const userId = doc.id;
-
-                    // Verificar si tiene créditos de bienvenida
-                    if (userData.welcomeCreditsGiven === true) {
-                        // Buscar los créditos de bienvenida
-                        const creditsSnapshot = await db.collection('userCredits')
-                            .where('userId', '==', userId)
-                            .where('type', '==', 'welcome_credit')
-                            .get();
-
-                        let totalWelcomeCredits = 0;
-                        const creditsToDelete = [];
-
-                        creditsSnapshot.forEach(creditDoc => {
-                            const data = creditDoc.data();
-                            totalWelcomeCredits += data.amount || 0;
-                            creditsToDelete.push(creditDoc.id);
-                        });
-
-                        if (totalWelcomeCredits > 0) {
-                            try {
-                                // Restar los créditos
-                                const currentCredits = userData.credits || 0;
-                                const newCredits = Math.max(0, currentCredits - totalWelcomeCredits);
-
-                                const batch = db.batch();
-                                creditsToDelete.forEach(id => {
-                                    batch.delete(db.collection('userCredits').doc(id));
-                                });
-                                batch.update(db.collection('users').doc(userId), {
-                                    credits: newCredits,
-                                    welcomeCreditsGiven: false,
-                                    welcomeCreditsCleanedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                    welcomeCreditsCleanedReason: 'Limpieza masiva de créditos de bienvenida a conductores'
-                                });
-                                await batch.commit();
-
-                                cleaned++;
-                                reportItems.push({
-                                    user: userName,
-                                    userId: userId,
-                                    email: userData.email || 'N/A',
-                                    amount: totalWelcomeCredits,
-                                    status: 'success',
-                                    message: `✅ ${formatCurrency(totalWelcomeCredits)} removidos`
-                                });
-
-                            } catch (err) {
-                                errors++;
-                                reportItems.push({
-                                    user: userName,
-                                    userId: userId,
-                                    email: userData.email || 'N/A',
-                                    amount: totalWelcomeCredits,
-                                    status: 'error',
-                                    message: `❌ Error: ${err.message}`
-                                });
-                            }
-                        } else {
-                            // Tiene flag true pero no hay registros, lo corregimos
-                            await db.collection('users').doc(userId).update({
-                                welcomeCreditsGiven: false
-                            });
-                            alreadyClean++;
-                            reportItems.push({
-                                user: userName,
-                                userId: userId,
-                                email: userData.email || 'N/A',
-                                amount: 0,
-                                status: 'warning',
-                                message: `⚠️ Flag corregido (no había registros)`
-                            });
-                        }
-                    } else {
-                        alreadyClean++;
-                        reportItems.push({
-                            user: userName,
-                            userId: userId,
-                            email: userData.email || 'N/A',
-                            amount: 0,
-                            status: 'info',
-                            message: `ℹ️ No tenía créditos de bienvenida`
-                        });
-                    }
-                }
-
-                // Mostrar reporte completo
-                reportDiv.innerHTML = `
-                    <div style="padding:10px;font-weight:600;border-bottom:1px solid var(--gray);margin-bottom:10px;">
-                        📊 Reporte de limpieza - ${new Date().toLocaleString()}
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px;padding:10px;background:var(--card-bg);border-radius:8px;">
-                        <div style="text-align:center;"><strong style="color:var(--success);">✅ ${cleaned}</strong> Limpiados</div>
-                        <div style="text-align:center;"><strong style="color:var(--warning);">ℹ️ ${alreadyClean}</strong> Sin créditos</div>
-                        <div style="text-align:center;"><strong style="color:var(--danger);">❌ ${errors}</strong> Errores</div>
-                    </div>
-                    <div style="max-height:200px;overflow-y:auto;">
-                        ${reportItems.map(item => `
-                            <div class="cleaning-report-item">
-                                <span class="${item.status}">${item.message}</span>
-                                <span style="color:var(--gray);font-size:12px;margin-left:10px;">${item.user}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-
-                showToast('✅ Limpieza completada', 
-                    `${cleaned} conductores limpiados, ${alreadyClean} ya estaban limpios, ${errors} errores`, 
-                    cleaned > 0 ? 'success' : 'warning');
-
-                // Recargar estadísticas
-                loadWelcomeCreditsSystem();
-
-            } catch (error) {
-                console.error('❌ Error en limpieza:', error);
-                reportDiv.innerHTML = `
-                    <div style="padding:10px;color:var(--danger);">
-                        ❌ Error en la limpieza: ${error.message}
-                    </div>
-                `;
-                showToast('❌ Error', error.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-broom"></i> Quitar Créditos de Bienvenida a Conductores';
-            }
-        }
-
-        // ================================================================
-        // 🔥 APPROVE DRIVER - CORREGIDO: QUITA CRÉDITOS DE BIENVENIDA
-        // ================================================================
+        // ===== FUNCIÓN APROBAR CORREGIDA CON vehicleType =====
         async function approveDriver(id, name, userId) {
             if (!confirm(`¿Aprobar a ${name}?`)) return;
             try {
@@ -4588,6 +4361,7 @@
                     } catch (e) {}
                 }
                 
+                // 🔥 AGREGAMOS vehicleType
                 const userUpdateData = {
                     isDriverVerified: true,
                     verificationStatus: 'approved',
@@ -4602,12 +4376,12 @@
                     vehicleColor: app.vehicleColor || '',
                     vehiclePlate: app.vehiclePlate ? app.vehiclePlate.toUpperCase().trim() : '',
                     vehiclePhoto: app.vehiclePhoto || '',
-                    profilePhoto: app.profilePhoto || app.photoURL || ''
+                    profilePhoto: app.profilePhoto || app.photoURL || '',
+                    vehicleType: app.vehicleType || 'car'
                 };
                 
                 await db.collection('users').doc(userId).set(userUpdateData, { merge: true });
 
-                // Quitar créditos de bienvenida si existen
                 const welcomeRemoved = await removeWelcomeCreditsFromDriver(userId);
                 if (welcomeRemoved) {
                     showToast('💰 Créditos removidos', 'Se quitaron $5.900 de créditos de bienvenida por convertirse en conductor', 'warning');
@@ -4642,13 +4416,10 @@
             }
         }
 
-        // ================================================================
-        // 🔥 REVOKE DRIVER - DEVUELVE CRÉDITOS DE BIENVENIDA
-        // ================================================================
+        // ===== FUNCIÓN REVOKE DRIVER =====
         async function revokeDriver(userId, name) {
             if (!confirm(`¿Revocar verificación de ${name}?`)) return;
             try {
-                // Verificar si el usuario tenía créditos de bienvenida antes de ser conductor
                 const userDoc = await db.collection('users').doc(userId).get();
                 const userData = userDoc.data();
                 
@@ -4661,7 +4432,6 @@
                     revokedBy: auth.currentUser.uid
                 });
 
-                // Si tenía créditos de bienvenida antes de ser conductor, se los devolvemos
                 if (hadWelcomeBefore) {
                     const amount = 5900;
                     await db.collection('users').doc(userId).update({
@@ -4671,7 +4441,6 @@
                         welcomeCreditsRestoredReason: 'Verificación de conductor revocada'
                     });
 
-                    // Registrar la restauración
                     await db.collection('userCredits').add({
                         userId: userId,
                         userName: name || userData.displayName || 'Usuario',
@@ -4694,236 +4463,6 @@
             }
         }
 
-        // ================================================================
-        // SERVICE ACCOUNT PARA PUSH NOTIFICATIONS
-        // ================================================================
-        const SERVICE_ACCOUNT = {
-            type: "service_account",
-            project_id: "express-94bd0",
-            private_key_id: "4008f5362bc6c0cee93483ed04eef82db615abde",
-            private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDeH8XQ3S0mN89J\nuY0Fawl+987fKHV3R537jBDnFoybaxfHDVOyVkZzN9QAJuw80/QkLcj9RLDnTS3/\nQ5AHCBfdaqPaWS2ZVLyQvQHjWasM3XJQzok+laEA/JjtGjaLdfBbMFxeg7X0fW6y\nmDd9TnRNQ11Dy1Az2bSYdycI4xCkiwti1BPlG/no8A0SsCuR4HP7TwBTZ0PzNxcw\nGymd6+ZWMxy9sOTVlubMmUlUsT9Azy1KRati7+2DEGNli8JpNLbdQuHg8by5xWoN\nXElNj9YNFCn6tTKcLLRrDANQORDhuVgjMFDC0Ik3vqgj/tLvMk0rc4PCh44d80zS\nk5hoXF61AgMBAAECggEAQhz94Yl7f0UcRyrZzROLW4XBxs1BjVO9M5qAi2+8QSQy\nixYt48ZnKLMkwDjVltNVdxFDohK4ftgLiU9gRp+Dju1HQN3LQzij+YawUa2mSml9\nNY0L75tUtTj6AZSMSJ09gb7Wt3EHjvJoqPLCjWL1HewfjeathAlYBgttDGmdUgPc\nw8wMnolBau07rFgobphe34BVRYQVZN7S33poEz1iQ94vAU6ObuIAzWpVv20Yvxgg\nuGmikp6oi9hfbCo5zh1uAjXAV4qoNHQ1cOuZum4qmrMonTFOtmu6d/nH4akifXxX\n8wAWX9g9o8dDjhH4SXyTFeQIlxqwgDYTR3xrbGFHrwKBgQD2WNUYOB2pAftANDqR\nTu7u4ovVXhBOWSf/lETYvD9OBhFxllcBR1129heGw8lkfwhHUrJ/emce83FRw7un\nORKn3Ihz36K3gGCSJ7FHxTjAuxlnjzEgiePreeu6Yc5R2u7Sj810zBbr8yhyyKX7\ni/bDDS+ftKGdhqYwrLvtLRyb2wKBgQDm0/RcR3ZprXVx/6HQKhAw0uARyELf4ei4\ntNPtPKfbcdWNURqR36bp1o68wwpu/PQ19NBwuES7PHM9Ay06C1L9Ozlr+UAq5Qqo\nYx4+kIY144aivAS85Q90dgwsq3+UC13voaa7E4shQrYYTzUI7JGXbsxLKppYXMmh\nBOzfIdu8rwKBgHbwaOJqpZdmB4L2NJjXvXDFHLKF2eWaEj/JvHvQV9g6Ac4Pwi4x\n4KSBKNa+TMwisUKOYPQ/iu5cp4fMsxuH6MP3LEKV5SAn8Xhfha6bQE19iESB1Dxb\nlxmoIfI5Kr5GsCwllhMgPqjpG8xfqBQNfbSq9yVqtuUxj6fMnmdi8n8lAoGAd7oO\nsGKcx9mh5lxqyPdYaIqokHCoR0n9FPkuR4pDoq5bzy33MxynjfitFrmvyrvHy8jM\n6PqbI+cJ+uaP6eB/zjuO4DNrlhQxQAARavA5vO/kILqXVocVShoE3JKj3N08fxQA\n0F4ltz3MB7Xl01gpeDuPGZnibtzJ9IwCdQYx3J8CgYBeXS63t7UfXom6+yNSMEEc\nQV/jytZkdFz4znbC0Ka2hTfYp6GTxOkfrhZ9n142fjta03S0VNs2P7+plYlOoNFp\nsp2KPDHbCQs5LSmxNjDiIhRGP3ERkBsmqOLhPtvJcrgdgJDzm2Ct9j5UrWN4FZ8d\no0WfYT3gUzKXRT6I+x3kyg==\n-----END PRIVATE KEY-----\n",
-            client_email: "firebase-adminsdk-fbsvc@express-94bd0.iam.gserviceaccount.com",
-            client_id: "112997877576777800045",
-            auth_uri: "https://accounts.google.com/o/oauth2/auth",
-            token_uri: "https://oauth2.googleapis.com/token",
-            auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-            client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40express-94bd0.iam.gserviceaccount.com"
-        };
-
-        async function getAccessToken() {
-            try {
-                const now = Math.floor(Date.now() / 1000);
-                const payload = {
-                    iss: SERVICE_ACCOUNT.client_email,
-                    aud: 'https://oauth2.googleapis.com/token',
-                    exp: now + 3600,
-                    iat: now,
-                    scope: 'https://www.googleapis.com/auth/firebase.messaging'
-                };
-
-                const header = { alg: 'RS256', typ: 'JWT' };
-                const encodedHeader = btoa(JSON.stringify(header));
-                const encodedPayload = btoa(JSON.stringify(payload));
-                const signatureInput = `${encodedHeader}.${encodedPayload}`;
-
-                let privateKey = SERVICE_ACCOUNT.private_key;
-                let pemContents = privateKey
-                    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-                    .replace(/-----END PRIVATE KEY-----/, '')
-                    .replace(/\n/g, '')
-                    .trim();
-                
-                const binaryDerString = atob(pemContents);
-                const binaryDer = new Uint8Array(binaryDerString.length);
-                for (let i = 0; i < binaryDerString.length; i++) {
-                    binaryDer[i] = binaryDerString.charCodeAt(i);
-                }
-
-                const key = await crypto.subtle.importKey(
-                    'pkcs8',
-                    binaryDer.buffer,
-                    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-                    false,
-                    ['sign']
-                );
-
-                const signature = await crypto.subtle.sign(
-                    'RSASSA-PKCS1-v1_5',
-                    key,
-                    new TextEncoder().encode(signatureInput)
-                );
-
-                const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
-                const jwt = `${signatureInput}.${encodedSignature}`;
-
-                const response = await fetch('https://oauth2.googleapis.com/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                        assertion: jwt
-                    })
-                });
-
-                const data = await response.json();
-                if (data.error) {
-                    console.error('❌ Error de OAuth:', data.error);
-                    return null;
-                }
-                return data.access_token || null;
-
-            } catch (error) {
-                console.error('❌ Error obteniendo token:', error);
-                return null;
-            }
-        }
-
-        async function sendDriverApprovedNotification(userId, driverName) {
-            try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                if (!userDoc.exists) return false;
-
-                const userData = userDoc.data();
-                const fcmToken = userData?.fcmToken;
-                const name = driverName || userData?.displayName || 'Conductor';
-
-                await db.collection('userNotifications').add({
-                    userId: userId,
-                    title: '✅ ¡Verificación Aprobada!',
-                    message: `Felicidades ${name}, ya eres conductor verificado de Express. 🚗`,
-                    type: 'success',
-                    read: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                if (!fcmToken) return true;
-
-                const accessToken = await getAccessToken();
-                if (!accessToken) return true;
-
-                const projectId = 'express-94bd0';
-                const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
-
-                const payload = {
-                    message: {
-                        token: fcmToken,
-                        notification: {
-                            title: '✅ ¡Verificación Aprobada!',
-                            body: `Felicidades ${name}, ya eres conductor verificado de Express. 🚗`
-                        },
-                        data: {
-                            type: 'verification_approved',
-                            driverId: userId,
-                            driverName: name
-                        },
-                        android: {
-                            priority: 'high',
-                            notification: {
-                                channel_id: 'express_channel',
-                                sound: 'default'
-                            }
-                        }
-                    }
-                };
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    console.log('✅ PUSH ENVIADO CORRECTAMENTE');
-                }
-                return true;
-
-            } catch (error) {
-                console.error('❌ Error:', error);
-                return false;
-            }
-        }
-
-        async function sendWelcomeCreditsNotification(userId, userName) {
-            try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                if (!userDoc.exists) return false;
-
-                const userData = userDoc.data();
-                const fcmToken = userData?.fcmToken;
-                const name = userName || userData?.displayName || 'Usuario';
-
-                await db.collection('userNotifications').add({
-                    userId: userId,
-                    title: '🎁 ¡Créditos de Bienvenida!',
-                    message: `¡${name}, has recibido $5.900 en créditos de bienvenida! Úsalos como quieras en tus viajes. 🚗💰`,
-                    type: 'success',
-                    read: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                if (!fcmToken) {
-                    console.log('⚠️ No hay token FCM para', name);
-                    return true;
-                }
-
-                const accessToken = await getAccessToken();
-                if (!accessToken) {
-                    console.log('⚠️ No se pudo obtener access token');
-                    return true;
-                }
-
-                const projectId = 'express-94bd0';
-                const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
-
-                const payload = {
-                    message: {
-                        token: fcmToken,
-                        notification: {
-                            title: '🎁 ¡Créditos de Bienvenida!',
-                            body: `¡${name}, has recibido $5.900 en créditos de bienvenida! Úsalos como quieras en tus viajes. 🚗💰`
-                        },
-                        data: {
-                            type: 'welcome_credits',
-                            userId: userId,
-                            userName: name,
-                            amount: '5900'
-                        },
-                        android: {
-                            priority: 'high',
-                            notification: {
-                                channel_id: 'express_channel',
-                                sound: 'default'
-                            }
-                        }
-                    }
-                };
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    console.log('✅ Notificación de bienvenida enviada a', name);
-                } else {
-                    const result = await response.json();
-                    console.error('❌ Error FCM:', result);
-                }
-                return true;
-
-            } catch (error) {
-                console.error('❌ Error enviando notificación de bienvenida:', error);
-                return false;
-            }
-        }
-
         async function rejectDriver(id, name) {
             if (!confirm(`¿Rechazar a ${name}?`)) return;
             try {
@@ -4935,6 +4474,127 @@
                 showToast('Rechazado', `Solicitud de ${name} rechazada`, 'warning');
                 loadPendingDrivers();
                 updateCounters();
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ========== VERIFIED DRIVERS =====
+        function loadVerifiedDrivers() {
+            const list = document.getElementById('verified-drivers-list');
+            showLoading(list);
+            
+            db.collection('users').where('isDriverVerified', '==', true).get()
+                .then(qs => {
+                    if (qs.empty) {
+                        list.innerHTML = `<div class="no-applications"><i class="fas fa-user-check"></i><div>No hay conductores verificados</div></div>`;
+                        return;
+                    }
+                    list.innerHTML = '';
+                    qs.forEach(doc => {
+                        const driver = doc.data();
+                        const el = document.createElement('div');
+                        el.className = 'verified-driver-card';
+                        const status = driver.isOnline ? 'online' : 'offline';
+                        const phone = getUserPhone(driver);
+                        
+                        const vehicleParts = [];
+                        if (driver.vehicleBrand) vehicleParts.push(driver.vehicleBrand);
+                        if (driver.vehicleModel) vehicleParts.push(driver.vehicleModel);
+                        if (driver.vehicleYear) vehicleParts.push(driver.vehicleYear);
+                        const vehicleInfo = vehicleParts.join(' ') || 'Vehículo no registrado';
+                        
+                        // 🔥 Tipo de vehículo
+                        const vehicleType = driver.vehicleType || 'car';
+                        const vehicleTypeEmoji = vehicleType === 'moto' ? '🏍️' : '🚗';
+                        const vehicleTypeLabel = vehicleType === 'moto' ? 'Moto' : 'Carro';
+                        
+                        el.innerHTML = `
+                            <div class="verified-driver-avatar">${getInitials(driver.displayName || driver.fullName || 'U')}</div>
+                            <div class="verified-driver-name">${driver.displayName || driver.fullName || 'Usuario'}</div>
+                            <div class="verified-driver-phone">📱 ${phone}</div>
+                            <div class="verified-driver-email">📧 ${driver.email || 'N/A'}</div>
+                            <div class="verified-driver-vehicle">${vehicleTypeEmoji} ${vehicleInfo}</div>
+                            <div style="text-align:center;font-size:13px;color:var(--gray);">
+                                <strong>Tipo:</strong> ${vehicleTypeLabel}
+                            </div>
+                            <div class="verified-driver-plate">🔢 Placa: <strong>${driver.vehiclePlate || 'NO REGISTRADA'}</strong></div>
+                            ${driver.vehicleColor ? `<div style="text-align:center;font-size:13px;color:var(--gray);">🎨 Color: ${driver.vehicleColor}</div>` : ''}
+                            <div class="verified-driver-status ${status}"><i class="fas fa-circle"></i> ${driver.isOnline ? 'En línea' : 'Desconectado'}</div>
+                            <div class="verified-driver-actions">
+                                <button class="btn-view-details" onclick="viewVerifiedDriverDetails('${doc.id}')">
+                                    <i class="fas fa-eye"></i> Ver Detalles
+                                </button>
+                                <button class="btn-revoke" onclick="revokeDriver('${doc.id}','${driver.displayName || driver.fullName || 'Usuario'}')">
+                                    <i class="fas fa-ban"></i> Revocar
+                                </button>
+                            </div>
+                        `;
+                        list.appendChild(el);
+                    });
+                })
+                .catch(error => {
+                    list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
+                });
+        }
+
+        // ===== FUNCIÓN CORREGIDA CON vehicleType =====
+        async function viewVerifiedDriverDetails(userId) {
+            try {
+                const doc = await db.collection('users').doc(userId).get();
+                if (!doc.exists) return;
+                const driver = doc.data();
+                const phone = getUserPhone(driver);
+                
+                const vehicleType = driver.vehicleType || 'car';
+                const vehicleTypeEmoji = vehicleType === 'moto' ? '🏍️' : '🚗';
+                const vehicleTypeLabel = vehicleType === 'moto' ? 'Moto' : 'Carro';
+                
+                const body = document.getElementById('modal-body');
+                body.innerHTML = `
+                    <div class="info-grid">
+                        <div class="info-section">
+                            <div class="info-section-title"><i class="fas fa-user"></i> Información Personal</div>
+                            <div class="info-item"><span class="info-label">Nombre</span><span class="info-value">${driver.displayName || driver.fullName || 'N/A'}</span></div>
+                            <div class="info-item"><span class="info-label">Email</span><span class="info-value">${driver.email || 'N/A'}</span></div>
+                            <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value">${phone}</span></div>
+                            <div class="info-item"><span class="info-label">Cédula</span><span class="info-value">${driver.idNumber || driver.cedula || 'N/A'}</span></div>
+                            <div class="info-item"><span class="info-label">Estado</span><span class="info-value"><span class="verified-driver-status ${driver.isOnline ? 'online' : 'offline'}" style="display:inline-block;width:auto;">${driver.isOnline ? '🟢 En línea' : '🔴 Desconectado'}</span></span></div>
+                            <div class="info-item"><span class="info-label">Viajes Completados</span><span class="info-value">${driver.completedRides || 0}</span></div>
+                            <div class="info-item"><span class="info-label">Ganancias Totales</span><span class="info-value">${formatCurrency(driver.totalEarnings || 0)}</span></div>
+                            <div class="info-item"><span class="info-label">Créditos</span><span class="info-value" style="color:var(--primary);font-size:20px;">${formatCurrency(driver.credits || 0)}</span></div>
+                        </div>
+                        <div class="info-section">
+                            <div class="info-section-title"><i class="fas fa-car"></i> Información del Vehículo</div>
+                            <div class="info-item"><span class="info-label">Tipo</span><span class="info-value">${vehicleTypeEmoji} ${vehicleTypeLabel}</span></div>
+                            <div class="info-item"><span class="info-label">Marca</span><span class="info-value">${driver.vehicleBrand || 'No especificada'}</span></div>
+                            <div class="info-item"><span class="info-label">Modelo</span><span class="info-value">${driver.vehicleModel || driver.vehicleBrand || 'No especificado'}</span></div>
+                            <div class="info-item"><span class="info-label">Año</span><span class="info-value">${driver.vehicleYear || 'No especificado'}</span></div>
+                            <div class="info-item"><span class="info-label">Color</span><span class="info-value">${driver.vehicleColor || 'No especificado'}</span></div>
+                            <div class="info-item"><span class="info-label">Placa</span><span class="info-value" style="font-size:18px;color:var(--primary);font-weight:700;">${driver.vehiclePlate || 'NO REGISTRADA'}</span></div>
+                            <div class="info-item" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--input-bg);">
+                                <span class="info-label">Estado Verificación</span>
+                                <span class="info-value"><span class="payment-status approved" style="display:inline-block;">✅ Verificado</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="photos-grid">
+                        <div class="photo-section">
+                            <div class="photo-title">Foto de Perfil</div>
+                            <div class="photo-container" onclick="openImageModal('${driver.photoURL || driver.profilePhoto}')">
+                                ${(driver.photoURL || driver.profilePhoto) ? `<img src="${driver.photoURL || driver.profilePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-user"></i><div>No disponible</div></div>`}
+                            </div>
+                        </div>
+                        <div class="photo-section">
+                            <div class="photo-title">Foto del Vehículo</div>
+                            <div class="photo-container" onclick="openImageModal('${driver.vehiclePhoto}')">
+                                ${driver.vehiclePhoto ? `<img src="${driver.vehiclePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-car"></i><div>No disponible</div></div>`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('details-modal').classList.add('active');
+                
             } catch (error) {
                 showToast('❌ Error', error.message, 'error');
             }
@@ -4962,6 +4622,7 @@
                 
                 const userData = userDoc.data();
                 
+                // 🔥 Incluimos vehicleType
                 await db.collection('users').doc(userId).update({
                     displayName: appData.fullName || userData.displayName,
                     email: appData.email || userData.email,
@@ -4974,6 +4635,7 @@
                     vehiclePlate: appData.vehiclePlate ? appData.vehiclePlate.toUpperCase().trim() : userData.vehiclePlate || '',
                     vehiclePhoto: appData.vehiclePhoto || userData.vehiclePhoto || '',
                     profilePhoto: appData.profilePhoto || appData.photoURL || userData.photoURL || '',
+                    vehicleType: appData.vehicleType || userData.vehicleType || 'car',
                     isDriverVerified: true,
                     verificationStatus: 'approved',
                     fixedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -5018,6 +4680,7 @@
                         displayName: appData.fullName || userData.displayName,
                         idNumber: appData.idNumber || userData.idNumber,
                         phone: appData.phone || userData.phone,
+                        vehicleType: appData.vehicleType || userData.vehicleType || 'car',
                         fixedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
@@ -5026,113 +4689,6 @@
                 
                 showToast('✅ Completado', `Se corrigieron ${fixed} conductores`, 'success');
                 loadVerifiedDrivers();
-                
-            } catch (error) {
-                showToast('❌ Error', error.message, 'error');
-            }
-        }
-
-        // ========== VERIFIED DRIVERS ==========
-        function loadVerifiedDrivers() {
-            const list = document.getElementById('verified-drivers-list');
-            showLoading(list);
-            
-            db.collection('users').where('isDriverVerified', '==', true).get()
-                .then(qs => {
-                    if (qs.empty) {
-                        list.innerHTML = `<div class="no-applications"><i class="fas fa-user-check"></i><div>No hay conductores verificados</div></div>`;
-                        return;
-                    }
-                    list.innerHTML = '';
-                    qs.forEach(doc => {
-                        const driver = doc.data();
-                        const el = document.createElement('div');
-                        el.className = 'verified-driver-card';
-                        const status = driver.isOnline ? 'online' : 'offline';
-                        const phone = getUserPhone(driver);
-                        
-                        const vehicleParts = [];
-                        if (driver.vehicleBrand) vehicleParts.push(driver.vehicleBrand);
-                        if (driver.vehicleModel) vehicleParts.push(driver.vehicleModel);
-                        if (driver.vehicleYear) vehicleParts.push(driver.vehicleYear);
-                        const vehicleInfo = vehicleParts.join(' ') || 'Vehículo no registrado';
-                        
-                        el.innerHTML = `
-                            <div class="verified-driver-avatar">${getInitials(driver.displayName || driver.fullName || 'U')}</div>
-                            <div class="verified-driver-name">${driver.displayName || driver.fullName || 'Usuario'}</div>
-                            <div class="verified-driver-phone">📱 ${phone}</div>
-                            <div class="verified-driver-email">📧 ${driver.email || 'N/A'}</div>
-                            <div class="verified-driver-vehicle">🚗 ${vehicleInfo}</div>
-                            <div class="verified-driver-plate">🔢 Placa: <strong>${driver.vehiclePlate || 'NO REGISTRADA'}</strong></div>
-                            ${driver.vehicleColor ? `<div style="text-align:center;font-size:13px;color:var(--gray);">🎨 Color: ${driver.vehicleColor}</div>` : ''}
-                            <div class="verified-driver-status ${status}"><i class="fas fa-circle"></i> ${driver.isOnline ? 'En línea' : 'Desconectado'}</div>
-                            <div class="verified-driver-actions">
-                                <button class="btn-view-details" onclick="viewVerifiedDriverDetails('${doc.id}')">
-                                    <i class="fas fa-eye"></i> Ver Detalles
-                                </button>
-                                <button class="btn-revoke" onclick="revokeDriver('${doc.id}','${driver.displayName || driver.fullName || 'Usuario'}')">
-                                    <i class="fas fa-ban"></i> Revocar
-                                </button>
-                            </div>
-                        `;
-                        list.appendChild(el);
-                    });
-                })
-                .catch(error => {
-                    list.innerHTML = `<div class="no-applications"><i class="fas fa-exclamation-triangle"></i><div>Error: ${error.message}</div></div>`;
-                });
-        }
-
-        async function viewVerifiedDriverDetails(userId) {
-            try {
-                const doc = await db.collection('users').doc(userId).get();
-                if (!doc.exists) return;
-                const driver = doc.data();
-                const phone = getUserPhone(driver);
-                
-                const body = document.getElementById('modal-body');
-                body.innerHTML = `
-                    <div class="info-grid">
-                        <div class="info-section">
-                            <div class="info-section-title"><i class="fas fa-user"></i> Información Personal</div>
-                            <div class="info-item"><span class="info-label">Nombre</span><span class="info-value">${driver.displayName || driver.fullName || 'N/A'}</span></div>
-                            <div class="info-item"><span class="info-label">Email</span><span class="info-value">${driver.email || 'N/A'}</span></div>
-                            <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value">${phone}</span></div>
-                            <div class="info-item"><span class="info-label">Cédula</span><span class="info-value">${driver.idNumber || driver.cedula || 'N/A'}</span></div>
-                            <div class="info-item"><span class="info-label">Estado</span><span class="info-value"><span class="verified-driver-status ${driver.isOnline ? 'online' : 'offline'}" style="display:inline-block;width:auto;">${driver.isOnline ? '🟢 En línea' : '🔴 Desconectado'}</span></span></div>
-                            <div class="info-item"><span class="info-label">Viajes Completados</span><span class="info-value">${driver.completedRides || 0}</span></div>
-                            <div class="info-item"><span class="info-label">Ganancias Totales</span><span class="info-value">${formatCurrency(driver.totalEarnings || 0)}</span></div>
-                            <div class="info-item"><span class="info-label">Créditos</span><span class="info-value" style="color:var(--primary);font-size:20px;">${formatCurrency(driver.credits || 0)}</span></div>
-                        </div>
-                        <div class="info-section">
-                            <div class="info-section-title"><i class="fas fa-car"></i> Información del Vehículo</div>
-                            <div class="info-item"><span class="info-label">Marca</span><span class="info-value">${driver.vehicleBrand || 'No especificada'}</span></div>
-                            <div class="info-item"><span class="info-label">Modelo</span><span class="info-value">${driver.vehicleModel || driver.vehicleBrand || 'No especificado'}</span></div>
-                            <div class="info-item"><span class="info-label">Año</span><span class="info-value">${driver.vehicleYear || 'No especificado'}</span></div>
-                            <div class="info-item"><span class="info-label">Color</span><span class="info-value">${driver.vehicleColor || 'No especificado'}</span></div>
-                            <div class="info-item"><span class="info-label">Placa</span><span class="info-value" style="font-size:18px;color:var(--primary);font-weight:700;">${driver.vehiclePlate || 'NO REGISTRADA'}</span></div>
-                            <div class="info-item" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--input-bg);">
-                                <span class="info-label">Estado Verificación</span>
-                                <span class="info-value"><span class="payment-status approved" style="display:inline-block;">✅ Verificado</span></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="photos-grid">
-                        <div class="photo-section">
-                            <div class="photo-title">Foto de Perfil</div>
-                            <div class="photo-container" onclick="openImageModal('${driver.photoURL || driver.profilePhoto}')">
-                                ${(driver.photoURL || driver.profilePhoto) ? `<img src="${driver.photoURL || driver.profilePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-user"></i><div>No disponible</div></div>`}
-                            </div>
-                        </div>
-                        <div class="photo-section">
-                            <div class="photo-title">Foto del Vehículo</div>
-                            <div class="photo-container" onclick="openImageModal('${driver.vehiclePhoto}')">
-                                ${driver.vehiclePhoto ? `<img src="${driver.vehiclePhoto}">` : `<div class="photo-placeholder"><i class="fas fa-car"></i><div>No disponible</div></div>`}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('details-modal').classList.add('active');
                 
             } catch (error) {
                 showToast('❌ Error', error.message, 'error');
@@ -5286,7 +4842,7 @@
             }
         }
 
-        // ========== CRÉDITOS (Sistema existente) ==========
+        // ========== CRÉDITOS ==========
         function loadCreditsRequests() {
             const list = document.getElementById('pending-credits-list');
             showLoading(list);
@@ -5397,10 +4953,7 @@
             }
         }
 
-        // ================================================================
-        // 🎁 CRÉDITOS DE BIENVENIDA - SOLO PASAJEROS
-        // ================================================================
-
+        // ========== WELCOME CREDITS ==========
         function loadWelcomeCreditsSystem() {
             loadWelcomeCreditsStats();
             loadWelcomeCreditsUsers();
@@ -5536,9 +5089,6 @@
             return el;
         }
 
-        // ================================================================
-        // 🎁 DAR CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS + NOTIFICACIÓN PUSH)
-        // ================================================================
         async function giveWelcomeCredits(userId, userName) {
             const amount = 5900;
 
@@ -5813,7 +5363,9 @@
                     }
                     qs.forEach(doc => {
                         const chat = doc.data(); chat.id = doc.id;
-                        if (chat.unreadCount > 0) unreadChatsCount += chat.unreadCount;
+                        if (chat.unreadCount && chat.unreadCount > 0) {
+                            unreadChatsCount += chat.unreadCount;
+                        }
                         list.appendChild(createChatItem(chat));
                     });
                     updateCounters();
@@ -5825,6 +5377,9 @@
             const el = document.createElement('div');
             el.className = 'active-chat-item';
             el.dataset.chatId = chat.id;
+            if (chat.userId) {
+                el.dataset.userId = chat.userId;
+            }
             const name = chat.userName || 'Usuario';
             const phone = chat.userPhone || 'N/A';
             
@@ -5837,7 +5392,7 @@
                     ${chat.unreadCount > 0 ? `<div class="chat-unread-count">${chat.unreadCount}</div>` : ''}
                 </div>
             `;
-            el.addEventListener('click', () => selectChat(chat.id, name, phone, chat.userEmail));
+            el.addEventListener('click', () => selectChat(chat.id, name, phone, chat.userEmail, chat.userId));
             return el;
         }
 
@@ -5851,17 +5406,21 @@
                     snapshot.forEach(doc => {
                         const chat = doc.data(); chat.id = doc.id;
                         if (chat.unreadCount > 0) unreadChatsCount += chat.unreadCount;
-                        list.appendChild(createChatItem(chat));
+                        const el = createChatItem(chat);
+                        list.appendChild(el);
                     });
                     updateCounters();
                     if (snapshot.empty) list.innerHTML = `<div class="no-applications"><i class="fas fa-comments"></i><div>No hay chats activos</div></div>`;
                 });
         }
 
-        function selectChat(id, name, phone, email) {
+        function selectChat(id, name, phone, email, userId) {
             document.querySelectorAll('.active-chat-item').forEach(i => i.classList.remove('active'));
             const selected = document.querySelector(`[data-chat-id="${id}"]`);
-            if (selected) selected.classList.add('active');
+            if (selected) {
+                selected.classList.add('active');
+                if (userId) selected.dataset.userId = userId;
+            }
             
             currentChatId = id;
             document.getElementById('current-chat-name').textContent = name;
@@ -5902,30 +5461,6 @@
                 });
         }
 
-        function sendChatMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text || !currentChatId) return;
-            
-            const msg = {
-                text: text,
-                sender: 'admin',
-                senderId: auth.currentUser.uid,
-                senderName: adminData?.displayName || 'Administrador',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            db.collection('chats').doc(currentChatId).collection('messages').add(msg)
-                .then(() => {
-                    db.collection('chats').doc(currentChatId).update({
-                        lastMessage: text,
-                        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        unreadCount: 0
-                    });
-                    input.value = '';
-                });
-        }
-
         function markChatAsRead(id) {
             db.collection('chats').doc(id).update({ unreadCount: 0 });
         }
@@ -5947,6 +5482,603 @@
                     showToast('✅ Limpiado', 'Chat limpiado correctamente', 'success');
                     loadChatMessages(id);
                 });
+        }
+
+        // ========== FUNCIÓN ENVIAR MENSAJE CHAT CON PUSH ==========
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
+            
+            const msg = {
+                text: text,
+                sender: 'admin',
+                senderId: auth.currentUser.uid,
+                senderName: adminData?.displayName || 'Administrador',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            let chatUserId = null;
+            const selectedItem = document.querySelector('.active-chat-item.active');
+            if (selectedItem) {
+                chatUserId = selectedItem.dataset.userId;
+            }
+            
+            if (!chatUserId) {
+                db.collection('chats').doc(currentChatId).get().then(chatDoc => {
+                    if (chatDoc.exists) {
+                        chatUserId = chatDoc.data().userId;
+                        const item = document.querySelector(`[data-chat-id="${currentChatId}"]`);
+                        if (item) item.dataset.userId = chatUserId;
+                    }
+                });
+            }
+            
+            db.collection('chats').doc(currentChatId).collection('messages').add(msg)
+                .then(() => {
+                    db.collection('chats').doc(currentChatId).update({
+                        lastMessage: text,
+                        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        unreadCount: 0
+                    });
+                    input.value = '';
+                    
+                    if (chatUserId) {
+                        const userName = document.getElementById('current-chat-name').textContent || 'Usuario';
+                        sendPushToUser(
+                            chatUserId,
+                            '📩 Nuevo mensaje de soporte Express',
+                            `Tienes un nuevo mensaje de soporte. Contesta cuando puedas.`
+                        ).then(sent => {
+                            if (sent) {
+                                showToast('📱 Notificación enviada', `Push enviado a ${userName}`, 'success');
+                            } else {
+                                showToast('⚠️ Sin push', `No se pudo enviar push a ${userName} (sin token)`, 'warning');
+                            }
+                        });
+                    } else {
+                        db.collection('chats').doc(currentChatId).get().then(chatDoc => {
+                            if (chatDoc.exists && chatDoc.data().userId) {
+                                const userId = chatDoc.data().userId;
+                                const userName = document.getElementById('current-chat-name').textContent || 'Usuario';
+                                sendPushToUser(
+                                    userId,
+                                    '📩 Nuevo mensaje de soporte Express',
+                                    `Tienes un nuevo mensaje de soporte. Contesta cuando puedas.`
+                                ).then(sent => {
+                                    if (sent) {
+                                        showToast('📱 Notificación enviada', `Push enviado a ${userName}`, 'success');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error enviando mensaje:', error);
+                    showToast('❌ Error', 'No se pudo enviar el mensaje', 'error');
+                });
+        }
+
+        // ========== FUNCIÓN PARA ENVIAR PUSH A UN USUARIO ESPECÍFICO ==========
+        async function sendPushToUser(userId, title, message) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    console.log('❌ Usuario no encontrado:', userId);
+                    return false;
+                }
+
+                const userData = userDoc.data();
+                const fcmToken = userData?.fcmToken;
+
+                if (!fcmToken) {
+                    console.log('⚠️ No hay token FCM para el usuario:', userId);
+                    return false;
+                }
+
+                const accessToken = await getAccessToken();
+                if (!accessToken) {
+                    console.log('⚠️ No se pudo obtener access token');
+                    return false;
+                }
+
+                const projectId = 'express-94bd0';
+                const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+                const payload = {
+                    message: {
+                        token: fcmToken,
+                        notification: {
+                            title: title || '📩 Nuevo mensaje de soporte',
+                            body: message || 'Tienes un nuevo mensaje de soporte Express. Contesta.'
+                        },
+                        data: {
+                            type: 'support_message',
+                            userId: userId,
+                            timestamp: Date.now().toString()
+                        },
+                        android: {
+                            priority: 'high',
+                            notification: {
+                                channel_id: 'express_channel',
+                                sound: 'default'
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Push enviado al usuario:', userId);
+                    return true;
+                } else {
+                    const result = await response.json();
+                    console.error('❌ Error FCM:', result);
+                    return false;
+                }
+
+            } catch (error) {
+                console.error('❌ Error enviando push al usuario:', error);
+                return false;
+            }
+        }
+
+        // ========== FUNCIÓN PARA ELIMINAR CRÉDITOS DE BIENVENIDA A CONDUCTORES ==========
+        async function removeWelcomeCreditsFromDriver(userId) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) return false;
+
+                const userData = userDoc.data();
+
+                if (userData.welcomeCreditsGiven !== true) {
+                    return false;
+                }
+
+                const creditsSnapshot = await db.collection('userCredits')
+                    .where('userId', '==', userId)
+                    .where('type', '==', 'welcome_credit')
+                    .get();
+
+                let totalWelcomeCredits = 0;
+                const creditsToDelete = [];
+
+                creditsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalWelcomeCredits += data.amount || 0;
+                    creditsToDelete.push(doc.id);
+                });
+
+                if (totalWelcomeCredits === 0) {
+                    await db.collection('users').doc(userId).update({
+                        welcomeCreditsGiven: false
+                    });
+                    return false;
+                }
+
+                const currentCredits = userData.credits || 0;
+                const newCredits = Math.max(0, currentCredits - totalWelcomeCredits);
+
+                const batch = db.batch();
+                creditsToDelete.forEach(id => {
+                    batch.delete(db.collection('userCredits').doc(id));
+                });
+
+                batch.update(db.collection('users').doc(userId), {
+                    credits: newCredits,
+                    welcomeCreditsGiven: false,
+                    welcomeCreditsRemovedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    welcomeCreditsRemovedReason: 'Usuario se convirtió en conductor'
+                });
+
+                await batch.commit();
+
+                await db.collection('welcomeCreditsAudit').add({
+                    userId: userId,
+                    userName: userData.displayName || userData.fullName || 'Usuario',
+                    userEmail: userData.email || '',
+                    action: 'removed',
+                    amount: totalWelcomeCredits,
+                    reason: 'Usuario se convirtió en conductor',
+                    performedBy: auth.currentUser.uid,
+                    performedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error removiendo créditos de bienvenida:', error);
+                return false;
+            }
+        }
+
+        // ========== LIMPIAR CRÉDITOS DE BIENVENIDA DE TODOS LOS CONDUCTORES ==========
+        async function cleanDriverWelcomeCredits() {
+            const btn = document.getElementById('btn-clean-driver-credits');
+            const reportDiv = document.getElementById('cleaning-report');
+            
+            if (!confirm('⚠️ ¿Estás seguro de querer QUITAR los créditos de bienvenida de TODOS los conductores verificados que los tengan?\n\nEsta acción:\n- Buscará todos los conductores con créditos de bienvenida\n- Les restará $5.900 de su saldo\n- Eliminará los registros de créditos de bienvenida\n- Marcará que ya no tienen bienvenida\n\n¡Esta acción NO se puede deshacer fácilmente!')) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando conductores...';
+            reportDiv.classList.remove('show');
+            reportDiv.innerHTML = '';
+
+            try {
+                const driversSnapshot = await db.collection('users')
+                    .where('isDriverVerified', '==', true)
+                    .get();
+
+                let totalDrivers = driversSnapshot.size;
+                let cleaned = 0;
+                let alreadyClean = 0;
+                let errors = 0;
+                const reportItems = [];
+
+                reportDiv.innerHTML = `<div style="padding:10px;font-weight:600;">🔍 Revisando ${totalDrivers} conductores...</div>`;
+                reportDiv.classList.add('show');
+
+                for (const doc of driversSnapshot.docs) {
+                    const userData = doc.data();
+                    const userName = userData.displayName || userData.fullName || 'Usuario';
+                    const userId = doc.id;
+
+                    if (userData.welcomeCreditsGiven === true) {
+                        const creditsSnapshot = await db.collection('userCredits')
+                            .where('userId', '==', userId)
+                            .where('type', '==', 'welcome_credit')
+                            .get();
+
+                        let totalWelcomeCredits = 0;
+                        const creditsToDelete = [];
+
+                        creditsSnapshot.forEach(creditDoc => {
+                            const data = creditDoc.data();
+                            totalWelcomeCredits += data.amount || 0;
+                            creditsToDelete.push(creditDoc.id);
+                        });
+
+                        if (totalWelcomeCredits > 0) {
+                            try {
+                                const currentCredits = userData.credits || 0;
+                                const newCredits = Math.max(0, currentCredits - totalWelcomeCredits);
+
+                                const batch = db.batch();
+                                creditsToDelete.forEach(id => {
+                                    batch.delete(db.collection('userCredits').doc(id));
+                                });
+                                batch.update(db.collection('users').doc(userId), {
+                                    credits: newCredits,
+                                    welcomeCreditsGiven: false,
+                                    welcomeCreditsCleanedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    welcomeCreditsCleanedReason: 'Limpieza masiva de créditos de bienvenida a conductores'
+                                });
+                                await batch.commit();
+
+                                cleaned++;
+                                reportItems.push({
+                                    user: userName,
+                                    userId: userId,
+                                    email: userData.email || 'N/A',
+                                    amount: totalWelcomeCredits,
+                                    status: 'success',
+                                    message: `✅ ${formatCurrency(totalWelcomeCredits)} removidos`
+                                });
+
+                            } catch (err) {
+                                errors++;
+                                reportItems.push({
+                                    user: userName,
+                                    userId: userId,
+                                    email: userData.email || 'N/A',
+                                    amount: totalWelcomeCredits,
+                                    status: 'error',
+                                    message: `❌ Error: ${err.message}`
+                                });
+                            }
+                        } else {
+                            await db.collection('users').doc(userId).update({
+                                welcomeCreditsGiven: false
+                            });
+                            alreadyClean++;
+                            reportItems.push({
+                                user: userName,
+                                userId: userId,
+                                email: userData.email || 'N/A',
+                                amount: 0,
+                                status: 'warning',
+                                message: `⚠️ Flag corregido (no había registros)`
+                            });
+                        }
+                    } else {
+                        alreadyClean++;
+                        reportItems.push({
+                            user: userName,
+                            userId: userId,
+                            email: userData.email || 'N/A',
+                            amount: 0,
+                            status: 'info',
+                            message: `ℹ️ No tenía créditos de bienvenida`
+                        });
+                    }
+                }
+
+                reportDiv.innerHTML = `
+                    <div style="padding:10px;font-weight:600;border-bottom:1px solid var(--gray);margin-bottom:10px;">
+                        📊 Reporte de limpieza - ${new Date().toLocaleString()}
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px;padding:10px;background:var(--card-bg);border-radius:8px;">
+                        <div style="text-align:center;"><strong style="color:var(--success);">✅ ${cleaned}</strong> Limpiados</div>
+                        <div style="text-align:center;"><strong style="color:var(--warning);">ℹ️ ${alreadyClean}</strong> Sin créditos</div>
+                        <div style="text-align:center;"><strong style="color:var(--danger);">❌ ${errors}</strong> Errores</div>
+                    </div>
+                    <div style="max-height:200px;overflow-y:auto;">
+                        ${reportItems.map(item => `
+                            <div class="cleaning-report-item">
+                                <span class="${item.status}">${item.message}</span>
+                                <span style="color:var(--gray);font-size:12px;margin-left:10px;">${item.user}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                showToast('✅ Limpieza completada', 
+                    `${cleaned} conductores limpiados, ${alreadyClean} ya estaban limpios, ${errors} errores`, 
+                    cleaned > 0 ? 'success' : 'warning');
+
+                loadWelcomeCreditsSystem();
+
+            } catch (error) {
+                console.error('❌ Error en limpieza:', error);
+                reportDiv.innerHTML = `
+                    <div style="padding:10px;color:var(--danger);">
+                        ❌ Error en la limpieza: ${error.message}
+                    </div>
+                `;
+                showToast('❌ Error', error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-broom"></i> Quitar Créditos de Bienvenida a Conductores';
+            }
+        }
+
+        // ========== SERVICE ACCOUNT PARA PUSH NOTIFICATIONS ==========
+        const SERVICE_ACCOUNT = {
+            type: "service_account",
+            project_id: "express-94bd0",
+            private_key_id: "4008f5362bc6c0cee93483ed04eef82db615abde",
+            private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDeH8XQ3S0mN89J\nuY0Fawl+987fKHV3R537jBDnFoybaxfHDVOyVkZzN9QAJuw80/QkLcj9RLDnTS3/\nQ5AHCBfdaqPaWS2ZVLyQvQHjWasM3XJQzok+laEA/JjtGjaLdfBbMFxeg7X0fW6y\nmDd9TnRNQ11Dy1Az2bSYdycI4xCkiwti1BPlG/no8A0SsCuR4HP7TwBTZ0PzNxcw\nGymd6+ZWMxy9sOTVlubMmUlUsT9Azy1KRati7+2DEGNli8JpNLbdQuHg8by5xWoN\nXElNj9YNFCn6tTKcLLRrDANQORDhuVgjMFDC0Ik3vqgj/tLvMk0rc4PCh44d80zS\nk5hoXF61AgMBAAECggEAQhz94Yl7f0UcRyrZzROLW4XBxs1BjVO9M5qAi2+8QSQy\nixYt48ZnKLMkwDjVltNVdxFDohK4ftgLiU9gRp+Dju1HQN3LQzij+YawUa2mSml9\nNY0L75tUtTj6AZSMSJ09gb7Wt3EHjvJoqPLCjWL1HewfjeathAlYBgttDGmdUgPc\nw8wMnolBau07rFgobphe34BVRYQVZN7S33poEz1iQ94vAU6ObuIAzWpVv20Yvxgg\nuGmikp6oi9hfbCo5zh1uAjXAV4qoNHQ1cOuZum4qmrMonTFOtmu6d/nH4akifXxX\n8wAWX9g9o8dDjhH4SXyTFeQIlxqwgDYTR3xrbGFHrwKBgQD2WNUYOB2pAftANDqR\nTu7u4ovVXhBOWSf/lETYvD9OBhFxllcBR1129heGw8lkfwhHUrJ/emce83FRw7un\nORKn3Ihz36K3gGCSJ7FHxTjAuxlnjzEgiePreeu6Yc5R2u7Sj810zBbr8yhyyKX7\ni/bDDS+ftKGdhqYwrLvtLRyb2wKBgQDm0/RcR3ZprXVx/6HQKhAw0uARyELf4ei4\ntNPtPKfbcdWNURqR36bp1o68wwpu/PQ19NBwuES7PHM9Ay06C1L9Ozlr+UAq5Qqo\nYx4+kIY144aivAS85Q90dgwsq3+UC13voaa7E4shQrYYTzUI7JGXbsxLKppYXMmh\nBOzfIdu8rwKBgHbwaOJqpZdmB4L2NJjXvXDFHLKF2eWaEj/JvHvQV9g6Ac4Pwi4x\n4KSBKNa+TMwisUKOYPQ/iu5cp4fMsxuH6MP3LEKV5SAn8Xhfha6bQE19iESB1Dxb\nlxmoIfI5Kr5GsCwllhMgPqjpG8xfqBQNfbSq9yVqtuUxj6fMnmdi8n8lAoGAd7oO\nsGKcx9mh5lxqyPdYaIqokHCoR0n9FPkuR4pDoq5bzy33MxynjfitFrmvyrvHy8jM\n6PqbI+cJ+uaP6eB/zjuO4DNrlhQxQAARavA5vO/kILqXVocVShoE3JKj3N08fxQA\n0F4ltz3MB7Xl01gpeDuPGZnibtzJ9IwCdQYx3J8CgYBeXS63t7UfXom6+yNSMEEc\nQV/jytZkdFz4znbC0Ka2hTfYp6GTxOkfrhZ9n142fjta03S0VNs2P7+plYlOoNFp\nsp2KPDHbCQs5LSmxNjDiIhRGP3ERkBsmqOLhPtvJcrgdgJDzm2Ct9j5UrWN4FZ8d\no0WfYT3gUzKXRT6I+x3kyg==\n-----END PRIVATE KEY-----\n",
+            client_email: "firebase-adminsdk-fbsvc@express-94bd0.iam.gserviceaccount.com",
+            client_id: "112997877576777800045",
+            auth_uri: "https://accounts.google.com/o/oauth2/auth",
+            token_uri: "https://oauth2.googleapis.com/token",
+            auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+            client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40express-94bd0.iam.gserviceaccount.com"
+        };
+
+        async function getAccessToken() {
+            try {
+                const now = Math.floor(Date.now() / 1000);
+                const payload = {
+                    iss: SERVICE_ACCOUNT.client_email,
+                    aud: 'https://oauth2.googleapis.com/token',
+                    exp: now + 3600,
+                    iat: now,
+                    scope: 'https://www.googleapis.com/auth/firebase.messaging'
+                };
+
+                const header = { alg: 'RS256', typ: 'JWT' };
+                const encodedHeader = btoa(JSON.stringify(header));
+                const encodedPayload = btoa(JSON.stringify(payload));
+                const signatureInput = `${encodedHeader}.${encodedPayload}`;
+
+                let privateKey = SERVICE_ACCOUNT.private_key;
+                let pemContents = privateKey
+                    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+                    .replace(/-----END PRIVATE KEY-----/, '')
+                    .replace(/\n/g, '')
+                    .trim();
+                
+                const binaryDerString = atob(pemContents);
+                const binaryDer = new Uint8Array(binaryDerString.length);
+                for (let i = 0; i < binaryDerString.length; i++) {
+                    binaryDer[i] = binaryDerString.charCodeAt(i);
+                }
+
+                const key = await crypto.subtle.importKey(
+                    'pkcs8',
+                    binaryDer.buffer,
+                    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+                    false,
+                    ['sign']
+                );
+
+                const signature = await crypto.subtle.sign(
+                    'RSASSA-PKCS1-v1_5',
+                    key,
+                    new TextEncoder().encode(signatureInput)
+                );
+
+                const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
+                const jwt = `${signatureInput}.${encodedSignature}`;
+
+                const response = await fetch('https://oauth2.googleapis.com/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                        assertion: jwt
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    console.error('❌ Error de OAuth:', data.error);
+                    return null;
+                }
+                return data.access_token || null;
+
+            } catch (error) {
+                console.error('❌ Error obteniendo token:', error);
+                return null;
+            }
+        }
+
+        async function sendDriverApprovedNotification(userId, driverName) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) return false;
+
+                const userData = userDoc.data();
+                const fcmToken = userData?.fcmToken;
+                const name = driverName || userData?.displayName || 'Conductor';
+
+                await db.collection('userNotifications').add({
+                    userId: userId,
+                    title: '✅ ¡Verificación Aprobada!',
+                    message: `Felicidades ${name}, ya eres conductor verificado de Express. 🚗`,
+                    type: 'success',
+                    read: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                if (!fcmToken) return true;
+
+                const accessToken = await getAccessToken();
+                if (!accessToken) return true;
+
+                const projectId = 'express-94bd0';
+                const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+                const payload = {
+                    message: {
+                        token: fcmToken,
+                        notification: {
+                            title: '✅ ¡Verificación Aprobada!',
+                            body: `Felicidades ${name}, ya eres conductor verificado de Express. 🚗`
+                        },
+                        data: {
+                            type: 'verification_approved',
+                            driverId: userId,
+                            driverName: name
+                        },
+                        android: {
+                            priority: 'high',
+                            notification: {
+                                channel_id: 'express_channel',
+                                sound: 'default'
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log('✅ PUSH ENVIADO CORRECTAMENTE');
+                }
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                return false;
+            }
+        }
+
+        async function sendWelcomeCreditsNotification(userId, userName) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) return false;
+
+                const userData = userDoc.data();
+                const fcmToken = userData?.fcmToken;
+                const name = userName || userData?.displayName || 'Usuario';
+
+                await db.collection('userNotifications').add({
+                    userId: userId,
+                    title: '🎁 ¡Créditos de Bienvenida!',
+                    message: `¡${name}, has recibido $5.900 en créditos de bienvenida! Úsalos como quieras en tus viajes. 🚗💰`,
+                    type: 'success',
+                    read: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                if (!fcmToken) {
+                    console.log('⚠️ No hay token FCM para', name);
+                    return true;
+                }
+
+                const accessToken = await getAccessToken();
+                if (!accessToken) {
+                    console.log('⚠️ No se pudo obtener access token');
+                    return true;
+                }
+
+                const projectId = 'express-94bd0';
+                const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+                const payload = {
+                    message: {
+                        token: fcmToken,
+                        notification: {
+                            title: '🎁 ¡Créditos de Bienvenida!',
+                            body: `¡${name}, has recibido $5.900 en créditos de bienvenida! Úsalos como quieras en tus viajes. 🚗💰`
+                        },
+                        data: {
+                            type: 'welcome_credits',
+                            userId: userId,
+                            userName: name,
+                            amount: '5900'
+                        },
+                        android: {
+                            priority: 'high',
+                            notification: {
+                                channel_id: 'express_channel',
+                                sound: 'default'
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Notificación de bienvenida enviada a', name);
+                } else {
+                    const result = await response.json();
+                    console.error('❌ Error FCM:', result);
+                }
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error enviando notificación de bienvenida:', error);
+                return false;
+            }
         }
 
         // ========== NOTIFICATIONS ==========
@@ -6616,6 +6748,7 @@
                 });
             db.collection('payments').where('status', '==', 'pending_approval').get()
                 .then(qs => document.getElementById('pending-receipts').textContent = qs.size);
+            
             document.getElementById('unread-chats-count').textContent = unreadChatsCount;
             document.getElementById('unread-chats').textContent = unreadChatsCount;
             updateUserBadge();
