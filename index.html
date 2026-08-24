@@ -48,7 +48,6 @@
             min-height: 100vh;
         }
         
-        /* ========== LOGIN / REGISTER SCREEN ========== */
         #auth-screen {
             display: flex;
             position: fixed;
@@ -222,7 +221,6 @@
             display: none;
         }
 
-        /* ========== ADMIN PANEL ========== */
         .admin-panel {
             display: none;
             width: 100%;
@@ -519,7 +517,6 @@
             color: var(--gray);
         }
 
-        /* ========== CREDITOS DE BIENVENIDA STYLES ========== */
         .welcome-credits-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -676,7 +673,72 @@
             background: var(--input-bg);
         }
 
-        /* ========== REST OF STYLES ========== */
+        /* Botón para limpiar créditos de conductores */
+        .btn-clean-driver-credits {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .btn-clean-driver-credits:hover:not(:disabled) {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
+
+        .btn-clean-driver-credits:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clean-driver-credits i {
+            font-size: 16px;
+        }
+
+        .cleaning-report {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid var(--success);
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .cleaning-report.show {
+            display: block;
+        }
+
+        .cleaning-report-item {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .cleaning-report-item .success {
+            color: var(--success);
+        }
+
+        .cleaning-report-item .error {
+            color: var(--danger);
+        }
+
+        .cleaning-report-item .warning {
+            color: var(--warning);
+        }
+
         .user-status-badge {
             padding: 4px 10px;
             border-radius: 12px;
@@ -2638,7 +2700,6 @@
             color: var(--gray);
         }
 
-        /* Push Notifications Styles */
         .push-form {
             background: var(--input-bg);
             border-radius: 10px;
@@ -3104,14 +3165,12 @@
                     <div class="sidebar-text">Ganancias</div>
                 </div>
                 
-                <!-- ========== CRÉDITOS (Sistema existente) ========== -->
                 <div class="sidebar-item" data-section="credits">
                     <div class="sidebar-icon"><i class="fas fa-coins"></i></div>
                     <div class="sidebar-text">Créditos</div>
                     <div class="sidebar-badge" id="pending-credits-badge">0</div>
                 </div>
 
-                <!-- ========== NUEVO: CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS) ========== -->
                 <div class="sidebar-item" data-section="welcome-credits">
                     <div class="sidebar-icon"><i class="fas fa-gift"></i></div>
                     <div class="sidebar-text">🎁 Bienvenida</div>
@@ -3287,7 +3346,7 @@
                     </div>
                 </div>
                 
-                <!-- ========== CRÉDITOS (Sistema existente) ========== -->
+                <!-- Credits -->
                 <div class="content-section" id="credits-section">
                     <div class="admin-section">
                         <div class="section-title"><i class="fas fa-coins"></i> Solicitudes de Créditos</div>
@@ -3297,7 +3356,7 @@
                     </div>
                 </div>
 
-                <!-- ========== NUEVO: CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS) ========== -->
+                <!-- ========== WELCOME CREDITS CON BOTÓN DE LIMPIEZA ========== -->
                 <div class="content-section" id="welcome-credits-section">
                     <div class="admin-section">
                         <div class="section-title"><i class="fas fa-gift"></i> Créditos de Bienvenida</div>
@@ -3307,10 +3366,23 @@
                             se enviará una notificación push automática.
                             <br><br>
                             <strong style="color:var(--danger);">⚠️ IMPORTANTE:</strong> Solo los pasajeros pueden recibir créditos de bienvenida. 
-                            Los conductores verificados NO aparecen en esta lista.
+                            <strong style="color:var(--danger);">Si un pasajero se convierte en conductor, los créditos se QUITAN automáticamente.</strong>
                         </p>
+
+                        <!-- 🔥 BOTÓN PARA LIMPIAR CRÉDITOS DE CONDUCTORES -->
+                        <div style="margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                            <button class="btn-clean-driver-credits" id="btn-clean-driver-credits" onclick="cleanDriverWelcomeCredits()">
+                                <i class="fas fa-broom"></i> Quitar Créditos de Bienvenida a Conductores
+                            </button>
+                            <span style="font-size:13px;color:var(--gray);">
+                                <i class="fas fa-info-circle"></i> Busca conductores que tengan créditos de bienvenida y los elimina
+                            </span>
+                        </div>
                         
-                        <!-- Estadísticas -->
+                        <!-- Reporte de limpieza -->
+                        <div class="cleaning-report" id="cleaning-report"></div>
+                        
+                        <!-- Statistics -->
                         <div class="stats-grid">
                             <div class="stat-item" style="border-left-color: #ff9800;">
                                 <div class="stat-value" id="total-welcome-credits">0</div>
@@ -3326,7 +3398,7 @@
                             </div>
                         </div>
                         
-                        <!-- Lista de pasajeros -->
+                        <!-- Passenger List -->
                         <div class="section-title" style="margin-top:20px;">
                             <i class="fas fa-user-plus"></i> Dar Créditos de Bienvenida a Pasajeros
                             <span style="font-size:12px;color:var(--gray);font-weight:400;margin-left:10px;">
@@ -3350,7 +3422,7 @@
                             <div class="loading"><div class="spinner"></div><div>Cargando pasajeros...</div></div>
                         </div>
                         
-                        <!-- Historial -->
+                        <!-- History -->
                         <div class="section-title" style="margin-top:30px;">
                             <i class="fas fa-history"></i> Historial de Créditos de Bienvenida
                         </div>
@@ -3755,7 +3827,6 @@
         let currentUserPage = 1;
         const usersPerPage = 10;
 
-        // ========== CRÉDITOS DE BIENVENIDA VARIABLES ==========
         let allWelcomeUsers = [];
         let filteredWelcomeUsers = [];
         let currentWelcomePage = 1;
@@ -3817,7 +3888,6 @@
             return date.toLocaleString('es-CO');
         }
 
-        // ========== FUNCIÓN PARA PROMPT DE FIX ==========
         function promptFixDriver() {
             const uid = prompt('Ingresa el userId del conductor:');
             if (uid) fixDriverData(uid);
@@ -4250,7 +4320,246 @@
         }
 
         // ================================================================
-        // 🔥 APPROVE DRIVER CON WHATSAPP Y NOTIFICACIÓN PUSH
+        // ⭐ FUNCIÓN PARA ELIMINAR CRÉDITOS DE BIENVENIDA A CONDUCTORES
+        // ================================================================
+        async function removeWelcomeCreditsFromDriver(userId) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) return false;
+
+                const userData = userDoc.data();
+
+                // Verificar si tiene créditos de bienvenida
+                if (userData.welcomeCreditsGiven !== true) {
+                    return false;
+                }
+
+                // Buscar los créditos de bienvenida en userCredits
+                const creditsSnapshot = await db.collection('userCredits')
+                    .where('userId', '==', userId)
+                    .where('type', '==', 'welcome_credit')
+                    .get();
+
+                let totalWelcomeCredits = 0;
+                const creditsToDelete = [];
+
+                creditsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalWelcomeCredits += data.amount || 0;
+                    creditsToDelete.push(doc.id);
+                });
+
+                if (totalWelcomeCredits === 0) {
+                    // Si no hay registros en userCredits pero el flag está en true, lo corregimos
+                    await db.collection('users').doc(userId).update({
+                        welcomeCreditsGiven: false
+                    });
+                    return false;
+                }
+
+                // Restar los créditos de bienvenida del total del usuario
+                const currentCredits = userData.credits || 0;
+                const newCredits = Math.max(0, currentCredits - totalWelcomeCredits);
+
+                // Eliminar los registros de userCredits
+                const batch = db.batch();
+                creditsToDelete.forEach(id => {
+                    batch.delete(db.collection('userCredits').doc(id));
+                });
+
+                // Actualizar el usuario
+                batch.update(db.collection('users').doc(userId), {
+                    credits: newCredits,
+                    welcomeCreditsGiven: false,
+                    welcomeCreditsRemovedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    welcomeCreditsRemovedReason: 'Usuario se convirtió en conductor'
+                });
+
+                await batch.commit();
+
+                // Registrar en historial de auditoría
+                await db.collection('welcomeCreditsAudit').add({
+                    userId: userId,
+                    userName: userData.displayName || userData.fullName || 'Usuario',
+                    userEmail: userData.email || '',
+                    action: 'removed',
+                    amount: totalWelcomeCredits,
+                    reason: 'Usuario se convirtió en conductor',
+                    performedBy: auth.currentUser.uid,
+                    performedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error removiendo créditos de bienvenida:', error);
+                return false;
+            }
+        }
+
+        // ================================================================
+        // 🔥 NUEVO: LIMPIAR CRÉDITOS DE BIENVENIDA DE TODOS LOS CONDUCTORES
+        // ================================================================
+        async function cleanDriverWelcomeCredits() {
+            const btn = document.getElementById('btn-clean-driver-credits');
+            const reportDiv = document.getElementById('cleaning-report');
+            
+            if (!confirm('⚠️ ¿Estás seguro de querer QUITAR los créditos de bienvenida de TODOS los conductores verificados que los tengan?\n\nEsta acción:\n- Buscará todos los conductores con créditos de bienvenida\n- Les restará $5.900 de su saldo\n- Eliminará los registros de créditos de bienvenida\n- Marcará que ya no tienen bienvenida\n\n¡Esta acción NO se puede deshacer fácilmente!')) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando conductores...';
+            reportDiv.classList.remove('show');
+            reportDiv.innerHTML = '';
+
+            try {
+                // Buscar todos los conductores verificados
+                const driversSnapshot = await db.collection('users')
+                    .where('isDriverVerified', '==', true)
+                    .get();
+
+                let totalDrivers = driversSnapshot.size;
+                let cleaned = 0;
+                let alreadyClean = 0;
+                let errors = 0;
+                const reportItems = [];
+
+                reportDiv.innerHTML = `<div style="padding:10px;font-weight:600;">🔍 Revisando ${totalDrivers} conductores...</div>`;
+                reportDiv.classList.add('show');
+
+                for (const doc of driversSnapshot.docs) {
+                    const userData = doc.data();
+                    const userName = userData.displayName || userData.fullName || 'Usuario';
+                    const userId = doc.id;
+
+                    // Verificar si tiene créditos de bienvenida
+                    if (userData.welcomeCreditsGiven === true) {
+                        // Buscar los créditos de bienvenida
+                        const creditsSnapshot = await db.collection('userCredits')
+                            .where('userId', '==', userId)
+                            .where('type', '==', 'welcome_credit')
+                            .get();
+
+                        let totalWelcomeCredits = 0;
+                        const creditsToDelete = [];
+
+                        creditsSnapshot.forEach(creditDoc => {
+                            const data = creditDoc.data();
+                            totalWelcomeCredits += data.amount || 0;
+                            creditsToDelete.push(creditDoc.id);
+                        });
+
+                        if (totalWelcomeCredits > 0) {
+                            try {
+                                // Restar los créditos
+                                const currentCredits = userData.credits || 0;
+                                const newCredits = Math.max(0, currentCredits - totalWelcomeCredits);
+
+                                const batch = db.batch();
+                                creditsToDelete.forEach(id => {
+                                    batch.delete(db.collection('userCredits').doc(id));
+                                });
+                                batch.update(db.collection('users').doc(userId), {
+                                    credits: newCredits,
+                                    welcomeCreditsGiven: false,
+                                    welcomeCreditsCleanedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    welcomeCreditsCleanedReason: 'Limpieza masiva de créditos de bienvenida a conductores'
+                                });
+                                await batch.commit();
+
+                                cleaned++;
+                                reportItems.push({
+                                    user: userName,
+                                    userId: userId,
+                                    email: userData.email || 'N/A',
+                                    amount: totalWelcomeCredits,
+                                    status: 'success',
+                                    message: `✅ ${formatCurrency(totalWelcomeCredits)} removidos`
+                                });
+
+                            } catch (err) {
+                                errors++;
+                                reportItems.push({
+                                    user: userName,
+                                    userId: userId,
+                                    email: userData.email || 'N/A',
+                                    amount: totalWelcomeCredits,
+                                    status: 'error',
+                                    message: `❌ Error: ${err.message}`
+                                });
+                            }
+                        } else {
+                            // Tiene flag true pero no hay registros, lo corregimos
+                            await db.collection('users').doc(userId).update({
+                                welcomeCreditsGiven: false
+                            });
+                            alreadyClean++;
+                            reportItems.push({
+                                user: userName,
+                                userId: userId,
+                                email: userData.email || 'N/A',
+                                amount: 0,
+                                status: 'warning',
+                                message: `⚠️ Flag corregido (no había registros)`
+                            });
+                        }
+                    } else {
+                        alreadyClean++;
+                        reportItems.push({
+                            user: userName,
+                            userId: userId,
+                            email: userData.email || 'N/A',
+                            amount: 0,
+                            status: 'info',
+                            message: `ℹ️ No tenía créditos de bienvenida`
+                        });
+                    }
+                }
+
+                // Mostrar reporte completo
+                reportDiv.innerHTML = `
+                    <div style="padding:10px;font-weight:600;border-bottom:1px solid var(--gray);margin-bottom:10px;">
+                        📊 Reporte de limpieza - ${new Date().toLocaleString()}
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px;padding:10px;background:var(--card-bg);border-radius:8px;">
+                        <div style="text-align:center;"><strong style="color:var(--success);">✅ ${cleaned}</strong> Limpiados</div>
+                        <div style="text-align:center;"><strong style="color:var(--warning);">ℹ️ ${alreadyClean}</strong> Sin créditos</div>
+                        <div style="text-align:center;"><strong style="color:var(--danger);">❌ ${errors}</strong> Errores</div>
+                    </div>
+                    <div style="max-height:200px;overflow-y:auto;">
+                        ${reportItems.map(item => `
+                            <div class="cleaning-report-item">
+                                <span class="${item.status}">${item.message}</span>
+                                <span style="color:var(--gray);font-size:12px;margin-left:10px;">${item.user}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                showToast('✅ Limpieza completada', 
+                    `${cleaned} conductores limpiados, ${alreadyClean} ya estaban limpios, ${errors} errores`, 
+                    cleaned > 0 ? 'success' : 'warning');
+
+                // Recargar estadísticas
+                loadWelcomeCreditsSystem();
+
+            } catch (error) {
+                console.error('❌ Error en limpieza:', error);
+                reportDiv.innerHTML = `
+                    <div style="padding:10px;color:var(--danger);">
+                        ❌ Error en la limpieza: ${error.message}
+                    </div>
+                `;
+                showToast('❌ Error', error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-broom"></i> Quitar Créditos de Bienvenida a Conductores';
+            }
+        }
+
+        // ================================================================
+        // 🔥 APPROVE DRIVER - CORREGIDO: QUITA CRÉDITOS DE BIENVENIDA
         // ================================================================
         async function approveDriver(id, name, userId) {
             if (!confirm(`¿Aprobar a ${name}?`)) return;
@@ -4297,6 +4606,12 @@
                 };
                 
                 await db.collection('users').doc(userId).set(userUpdateData, { merge: true });
+
+                // Quitar créditos de bienvenida si existen
+                const welcomeRemoved = await removeWelcomeCreditsFromDriver(userId);
+                if (welcomeRemoved) {
+                    showToast('💰 Créditos removidos', 'Se quitaron $5.900 de créditos de bienvenida por convertirse en conductor', 'warning');
+                }
                 
                 await sendDriverApprovedNotification(userId, name || app.fullName);
                 
@@ -4328,9 +4643,60 @@
         }
 
         // ================================================================
-        // 📱 ENVIAR NOTIFICACIÓN PUSH CON CUENTA DE SERVICIO
+        // 🔥 REVOKE DRIVER - DEVUELVE CRÉDITOS DE BIENVENIDA
         // ================================================================
+        async function revokeDriver(userId, name) {
+            if (!confirm(`¿Revocar verificación de ${name}?`)) return;
+            try {
+                // Verificar si el usuario tenía créditos de bienvenida antes de ser conductor
+                const userDoc = await db.collection('users').doc(userId).get();
+                const userData = userDoc.data();
+                
+                const hadWelcomeBefore = userData.welcomeCreditsGivenBeforeDriver === true;
+                
+                await db.collection('users').doc(userId).update({
+                    isDriverVerified: false,
+                    verificationStatus: 'revoked',
+                    revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    revokedBy: auth.currentUser.uid
+                });
 
+                // Si tenía créditos de bienvenida antes de ser conductor, se los devolvemos
+                if (hadWelcomeBefore) {
+                    const amount = 5900;
+                    await db.collection('users').doc(userId).update({
+                        credits: (userData.credits || 0) + amount,
+                        welcomeCreditsGiven: true,
+                        welcomeCreditsRestoredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        welcomeCreditsRestoredReason: 'Verificación de conductor revocada'
+                    });
+
+                    // Registrar la restauración
+                    await db.collection('userCredits').add({
+                        userId: userId,
+                        userName: name || userData.displayName || 'Usuario',
+                        amount: amount,
+                        type: 'welcome_credit_restored',
+                        restoredBy: auth.currentUser.uid,
+                        restoredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        note: 'Créditos de bienvenida restaurados al revocar verificación de conductor'
+                    });
+
+                    showToast('💰 Créditos restaurados', `Se devolvieron $5.900 a ${name}`, 'success');
+                }
+
+                showToast('Verificación Revocada', `La verificación de ${name} ha sido revocada`, 'warning');
+                loadVerifiedDrivers();
+                updateCounters();
+                loadWelcomeCreditsSystem();
+            } catch (error) {
+                showToast('❌ Error', error.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // SERVICE ACCOUNT PARA PUSH NOTIFICATIONS
+        // ================================================================
         const SERVICE_ACCOUNT = {
             type: "service_account",
             project_id: "express-94bd0",
@@ -4480,9 +4846,6 @@
             }
         }
 
-        // ================================================================
-        // 🎁 ENVIAR NOTIFICACIÓN PUSH POR CRÉDITOS DE BIENVENIDA
-        // ================================================================
         async function sendWelcomeCreditsNotification(userId, userName) {
             try {
                 const userDoc = await db.collection('users').doc(userId).get();
@@ -4776,23 +5139,6 @@
             }
         }
 
-        async function revokeDriver(id, name) {
-            if (!confirm(`¿Revocar verificación de ${name}?`)) return;
-            try {
-                await db.collection('users').doc(id).update({
-                    isDriverVerified: false,
-                    verificationStatus: 'revoked',
-                    revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    revokedBy: auth.currentUser.uid
-                });
-                showToast('Verificación Revocada', `La verificación de ${name} ha sido revocada`, 'warning');
-                loadVerifiedDrivers();
-                updateCounters();
-            } catch (error) {
-                showToast('❌ Error', error.message, 'error');
-            }
-        }
-
         // ========== EARNINGS ==========
         function loadEarnings() {
             db.collection('users').where('isDriverVerified', '==', true).get()
@@ -5063,7 +5409,6 @@
 
         async function loadWelcomeCreditsStats() {
             try {
-                // Total de créditos de bienvenida otorgados
                 const creditsSnapshot = await db.collection('userCredits')
                     .where('type', '==', 'welcome_credit')
                     .get();
@@ -5080,7 +5425,6 @@
                 document.getElementById('total-welcome-credits').textContent = formatCurrency(totalCredits);
                 document.getElementById('welcome-users-received').textContent = usersWithWelcome.size;
 
-                // SOLO PASAJEROS: usuarios que NO son conductores verificados
                 const allUsers = await db.collection('users').where('isDriverVerified', '==', false).get();
                 let pending = 0;
                 allUsers.forEach(doc => {
@@ -5101,7 +5445,6 @@
 
             const search = document.getElementById('welcome-user-search').value.toLowerCase().trim();
 
-            // SOLO PASAJEROS: isDriverVerified == false
             db.collection('users')
                 .where('isDriverVerified', '==', false)
                 .orderBy('createdAt', 'desc')
@@ -5170,7 +5513,6 @@
             const hasWelcomeCredits = user.welcomeCreditsGiven === true;
             const isDriver = user.isDriverVerified === true;
             
-            // Si es conductor, no debería aparecer, pero por seguridad lo marcamos
             const userType = isDriver ? '🚗 Conductor' : '👤 Pasajero';
             const statusClass = isDriver ? 'driver' : 'passenger';
             
@@ -5198,7 +5540,7 @@
         // 🎁 DAR CRÉDITOS DE BIENVENIDA (SOLO PASAJEROS + NOTIFICACIÓN PUSH)
         // ================================================================
         async function giveWelcomeCredits(userId, userName) {
-            const amount = 5900; // $5.900 créditos de bienvenida
+            const amount = 5900;
 
             if (!userId || !userName) {
                 showToast('❌ Error', 'Datos de usuario inválidos', 'error');
@@ -5214,7 +5556,6 @@
 
                 const userData = userDoc.data();
 
-                // 🔥 VERIFICACIÓN CRÍTICA: SOLO PASAJEROS
                 if (userData.isDriverVerified === true) {
                     showToast('⛔ Acción Denegada', '¡Los conductores verificados NO pueden recibir créditos de bienvenida!', 'error');
                     return;
@@ -5241,7 +5582,6 @@
                     return;
                 }
 
-                // Guardar registro de créditos otorgados
                 await db.collection('userCredits').add({
                     userId: userId,
                     userName: userName,
@@ -5255,7 +5595,6 @@
                     note: 'Créditos de bienvenida para pasajero'
                 });
 
-                // Actualizar usuario
                 const currentCredits = userData.credits || 0;
                 await db.collection('users').doc(userId).update({
                     credits: currentCredits + amount,
@@ -5263,7 +5602,6 @@
                     welcomeCreditsGivenAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // 🔥 ENVIAR NOTIFICACIÓN PUSH
                 await sendWelcomeCreditsNotification(userId, userName);
 
                 showToast('🎉 Créditos Otorgados', `${formatCurrency(amount)} créditos entregados a ${userName}`, 'success');
